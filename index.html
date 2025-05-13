@@ -45,6 +45,10 @@
     #vacList button{border:none;background:none;color:#d33;font-size:14px;cursor:pointer}
     /* Центрирование календаря */
     .flatpickr-calendar { position: fixed !important; top: 50% !important; left: 50% !important; transform: translate(-50%, -50%) !important; }
+    /* Стили для праздничных дней */
+    .holiday, .flatpickr-day.weekend { color: #ff0000 !important; }
+    .flatpickr-day.holiday:hover, .flatpickr-day.weekend:hover { background: #ffe6e6; }
+    .flatpickr-day.selected.holiday, .flatpickr-day.selected.weekend { background: #2680eb; color: white !important; }
   </style>
 </head>
 <body>
@@ -91,10 +95,19 @@
 </div>
 <script>
   /* ---------- Данные праздников 2025 ---------- */
-  const holidays2025 = new Set([
-    '2025-01-01','2025-01-02','2025-01-03','2025-01-04','2025-01-05','2025-01-06','2025-01-07','2025-01-08',
-    '2025-02-23','2025-03-08','2025-05-01','2025-05-02','2025-05-09','2025-06-12','2025-11-04','2025-12-31'
-  ]);
+  const holidays2025 = [
+    // Январь
+    '2025-01-01', '2025-01-02', '2025-01-03', '2025-01-04', 
+    '2025-01-05', '2025-01-06', '2025-01-07', '2025-01-08',
+    // Май
+    '2025-05-01', '2025-05-02', '2025-05-08', '2025-05-09',
+    // Июнь
+    '2025-06-12', '2025-06-13',
+    // Ноябрь
+    '2025-11-03', '2025-11-04',
+    // Декабрь
+    '2025-12-31'
+  ];
 
   /* ---------- Элементы ---------- */
   const targetInput=document.getElementById('targetInput');
@@ -144,7 +157,7 @@
     vacations.forEach(({from,to})=>{
       for(const d of eachDay(new Date(from),new Date(to))){
         const iso=dateISO(d);
-        if(!holidays2025.has(iso)){ monthCounts[d.getMonth()]++; }
+        if(!holidays2025.includes(iso)){ monthCounts[d.getMonth()]++; }
       }
     });
     monthCounts.forEach((cnt,i)=>{paid[i].textContent=cnt;});
@@ -154,20 +167,55 @@
   // Добавление/удаление периодов
   const fpInput=document.createElement('input');
   addVacationBtn.addEventListener('click',()=>{
-    flatpickr(fpInput,{locale:'ru',mode:'range',dateFormat:'d.m.Y',onClose:(selDates)=>{
-      if(selDates.length===2){
-        const [from,to]=selDates;
-        vacations.push({from,to});
-        renderVacations();
-        updateVacations();
+    flatpickr(fpInput,{
+      locale:'ru',
+      mode:'range',
+      dateFormat:'d.m.Y',
+      onDayCreate: function(dObj, dStr, fp, dayElem) {
+        const date = dayElem.dateObj;
+        if (isHoliday(date)) {
+          dayElem.classList.add('holiday');
+        }
+        if (isWeekend(date) && !isHoliday(date)) {
+          dayElem.classList.add('weekend');
+        }
+      },
+      onChange: function(selectedDates) {
+        if (selectedDates.length === 2) {
+          let workDays = 0;
+          let totalDays = 0;
+          for (const d of eachDay(selectedDates[0], selectedDates[1])) {
+            totalDays++;
+            if (!isHoliday(d) && !isWeekend(d)) {
+              workDays++;
+            }
+          }
+          fpInput._fp.altInput.placeholder = `Выберите период (всего ${totalDays} дн., из них ${workDays} раб. дн.)`;
+        }
+      },
+      onClose:(selDates)=>{
+        if(selDates.length===2){
+          const [from,to]=selDates;
+          let workDays = 0;
+          let totalDays = 0;
+          for (const d of eachDay(from, to)) {
+            totalDays++;
+            if (!isHoliday(d) && !isWeekend(d)) {
+              workDays++;
+            }
+          }
+          vacations.push({from,to,days:workDays,totalDays:totalDays});
+          renderVacations();
+          updateVacations();
+        }
       }
-    }}).open();
+    }).open();
   });
   function renderVacations(){
     vacList.innerHTML='';
     vacations.forEach((v,idx)=>{
       const li=document.createElement('li');
-      li.innerHTML=`${v.from.toLocaleDateString()} – ${v.to.toLocaleDateString()} <button>&times;</button>`;
+      li.innerHTML=`${v.from.toLocaleDateString()} – ${v.to.toLocaleDateString()} (всего ${v.totalDays} дн., из них ${v.days} раб. дн.) <button>&times;</button>`;
       li.querySelector('button').onclick=()=>{vacations.splice(idx,1);renderVacations();updateVacations();};
       vacList.appendChild(li);
     });
@@ -274,6 +322,25 @@
   document.querySelectorAll('input,select').forEach(el=>el.addEventListener('input', recalc));
   showNet.addEventListener('change', recalc);
 
+  // Функция для проверки праздничных дней
+  function isHoliday(date) {
+    // Преобразуем дату в строку в формате YYYY-MM-DD с учетом локального времени
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const dateStr = `${year}-${month}-${day}`;
+    return holidays2025.includes(dateStr);
+  }
+
+  // Функция для проверки выходных дней
+  function isWeekend(date) {
+    const day = date.getDay();
+    // 1 ноября 2025 - рабочая суббота
+    if (date.getFullYear() === 2025 && date.getMonth() === 10 && date.getDate() === 1) {
+      return false;
+    }
+    return day === 0 || day === 6;
+  }
 
   // Инициализация
   recalc();
