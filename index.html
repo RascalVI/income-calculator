@@ -40,15 +40,106 @@
     .note{font-size:12px;color:#666;margin-top:6px}
     summary{cursor:pointer;font-weight:600}
     /* Список отпусков */
-    #vacList{list-style:none;padding:0;margin:8px 0 0 0;max-width:300px}
-    #vacList li{background:#f0f3f5;border-radius:6px;padding:6px 10px;margin-top:6px;display:flex;justify-content:space-between;align-items:center;font-size:13px}
-    #vacList button{border:none;background:none;color:#d33;font-size:14px;cursor:pointer}
+    .vacation-block { 
+      display: flex;
+      flex-direction: column;
+      margin: 16px 0;
+      width: 100%;
+    }
+    #vacList {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 8px 0;
+      max-width: 300px;
+    }
+    #vacList li {
+      background: #f0f3f5;
+      border-radius: 6px;
+      padding: 6px 10px;
+      margin-bottom: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+    }
+    #vacList .actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    #vacList button {
+      border: none;
+      background: none;
+      cursor: pointer;
+      padding: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #vacList .delete-btn {
+      color: #d33;
+      font-size: 14px;
+    }
+    #vacList .edit-btn {
+      color: #666;
+      font-size: 14px;
+    }
+    #vacList .edit-btn:hover {
+      color: #2680eb;
+    }
     /* Центрирование календаря */
     .flatpickr-calendar { position: fixed !important; top: 50% !important; left: 50% !important; transform: translate(-50%, -50%) !important; }
     /* Стили для праздничных дней */
     .holiday, .flatpickr-day.weekend { color: #ff0000 !important; }
     .flatpickr-day.holiday:hover, .flatpickr-day.weekend:hover { background: #ffe6e6; }
     .flatpickr-day.selected.holiday, .flatpickr-day.selected.weekend { background: #2680eb; color: white !important; }
+    /* Стили для существующих отпусков */
+    .flatpickr-day.existing-vacation { 
+      background: #e6ffe6 !important;
+      border-color: #b3ffb3 !important;
+    }
+    .flatpickr-day.existing-vacation:hover {
+      background: #ccffcc !important;
+    }
+    /* Стили для начала и конца периода отпуска */
+    .flatpickr-day.existing-vacation.vacation-start:not(.weekend):not(.holiday),
+    .flatpickr-day.existing-vacation.vacation-end:not(.weekend):not(.holiday) {
+      color: #000 !important;
+    }
+    /* Сохраняем красный цвет для выходных и праздников */
+    .flatpickr-day.existing-vacation.vacation-start.weekend,
+    .flatpickr-day.existing-vacation.vacation-end.weekend,
+    .flatpickr-day.existing-vacation.vacation-start.holiday,
+    .flatpickr-day.existing-vacation.vacation-end.holiday {
+      color: #ff0000 !important;
+    }
+    /* Стили для кнопки добавления отпуска */
+    #addVacation {
+      padding: 8px 20px;
+      border: none;
+      border-radius: 8px;
+      background: #2067D9;
+      color: #fff;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s ease;
+      width: fit-content;
+      align-self: flex-start;
+    }
+    #addVacation:hover {
+      background: #1756bc;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(32, 103, 217, 0.2);
+    }
+    .info-text {
+      font-size: 13px;
+      color: #666;
+      margin: 8px 0 16px;
+      line-height: 1.4;
+    }
+    .info-text p {
+      margin: 4px 0;
+    }
   </style>
 </head>
 <body>
@@ -79,15 +170,15 @@
 <p class="note"><em>Совокупный доход = База × 12 + Квартальные премии × 4 + Годовая премия</em></p>
 <details>
   <summary>Учёт праздников, отпусков и дополнительных выплат</summary>
+  <div class="info-text">
+    <p>НДФЛ: при превышении порога строка месяца меняет цвет (13 → 15 → 18 → 20 → 22 %).</p>
+    <p>Доп. выплаты: внесите разовые премии/компенсации; они добавятся к месяцу и к ним применится текущая ставка.</p>
+  </div>
   <!-- Блок отпусков -->
-<div style="margin:16px 0;">
-  <button id="addVacation"
-          style="padding:8px 14px;border:1px solid #2680eb;border-radius:6px;
-                 background:#2680eb;color:#fff;cursor:pointer;font-size:14px;">
-    Добавить опл. отпуск
-  </button>
-  <ul id="vacList"></ul>
-</div>
+  <div class="vacation-block">
+    <ul id="vacList"></ul>
+    <button id="addVacation">+ Добавить оплач. отпуск</button>
+  </div>
   <div class="table-wrap">
     <table id="tbl"><thead><tr><th>Месяц</th><th class="small">Норма дней</th><th class="wrap">Оплач.<br>отпуск</th><th class="wrap">Неопл.<br>отпуск</th><th class="wrap">Стоимость<br>дня, ₽</th><th>База, ₽</th><th class="wrap">Кварт.<br>премия, ₽</th><th class="wrap">Год.<br>премия, ₽</th><th>Доп. выплаты, ₽</th><th>НДФЛ, ₽</th><th>Итого, ₽</th></tr></thead><tbody></tbody><tfoot><tr><td colspan="10" style="text-align:right;font-weight:700">Фактически за год, ₽:</td><td id="fact">0</td></tr></tfoot></table>
   </div>
@@ -125,7 +216,7 @@
   /* ---------- Константы расчёта ---------- */
   const months=['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
   const norms=[17,20,21,22,18,19,23,21,22,23,19,22];
-  const steps=[{lim:2400000,rate:13,cls:'tax13',info:'13 % до 2,4 млн'},{lim:5000000,rate:15,cls:'tax15',info:'15 % до 5 млн'},{lim:20000000,rate:18,cls:'tax18',info:'18 % до 20 млн'},{lim:50000000,rate:20,cls:'tax20',info:'20 % до 50 млн'},{lim:Infinity,rate:22,cls:'tax22',info:'22 % свыше 50 млн'}];
+  const steps=[{lim:2400000,rate:13,cls:'tax13',info:'Применяется НДФЛ 13 % до 2,4 млн'},{lim:5000000,rate:15,cls:'tax15',info:'Применяется НДФЛ 13 % до 2,4 млн, 15 % до 5 млн'},{lim:20000000,rate:18,cls:'tax18',info:'Применяется НДФЛ 13 % до 2,4 млн, 15 % до 5 млн, 18 % до 20 млн'},{lim:50000000,rate:20,cls:'tax20',info:'Применяется НДФЛ 13 % до 2,4 млн, 15 % до 5 млн, 18 % до 20 млн, 20 % до 50 млн'},{lim:Infinity,rate:22,cls:'tax22',info:'Применяется НДФЛ 13 % до 2,4 млн, 15 % до 5 млн, 18 % до 20 млн, 20 % до 50 млн, 22 % свыше 50 млн'}];
   const coeffMap={1.3:'A',1.15:'B',1:'C',0.75:'D',0:'E'};
 
   /* ---------- Строим таблицу ---------- */
@@ -154,6 +245,9 @@
   function updateVacations(){
     // нулируем значения
     const monthCounts=new Array(12).fill(0);
+    // Сортируем отпуска перед обработкой
+    vacations.sort((a, b) => a.from.getTime() - b.from.getTime());
+    
     vacations.forEach(({from,to})=>{
       for(const d of eachDay(new Date(from),new Date(to))){
         const iso=dateISO(d);
@@ -167,12 +261,30 @@
   // Добавление/удаление периодов
   const fpInput=document.createElement('input');
   addVacationBtn.addEventListener('click',()=>{
-    flatpickr(fpInput,{
+    const fp = flatpickr(fpInput,{
       locale:'ru',
       mode:'range',
       dateFormat:'d.m.Y',
+      // Добавляем опцию для отключения очистки выбора
+      allowInput: false,
+      clickOpens: true,
       onDayCreate: function(dObj, dStr, fp, dayElem) {
         const date = dayElem.dateObj;
+        // Проверяем, входит ли дата в существующие периоды отпусков
+        const currentDate = date.getTime();
+        vacations.forEach(v => {
+          if (currentDate >= v.from.getTime() && currentDate <= v.to.getTime()) {
+            dayElem.classList.add('existing-vacation');
+            // Добавляем классы для начала и конца периода
+            if (currentDate === v.from.getTime()) {
+              dayElem.classList.add('vacation-start');
+            }
+            if (currentDate === v.to.getTime()) {
+              dayElem.classList.add('vacation-end');
+            }
+          }
+        });
+        
         if (isHoliday(date)) {
           dayElem.classList.add('holiday');
         }
@@ -196,6 +308,20 @@
       onClose:(selDates)=>{
         if(selDates.length===2){
           const [from,to]=selDates;
+          // Проверяем пересечение с существующими отпусками
+          const hasOverlap = vacations.some(v => {
+            const newStart = from.getTime();
+            const newEnd = to.getTime();
+            const existingStart = v.from.getTime();
+            const existingEnd = v.to.getTime();
+            return (newStart <= existingEnd && newEnd >= existingStart);
+          });
+
+          if (hasOverlap) {
+            alert('Выбранный период пересекается с уже существующим отпуском. Пожалуйста, выберите другой период.');
+            return;
+          }
+
           let workDays = 0;
           let totalDays = 0;
           for (const d of eachDay(from, to)) {
@@ -207,16 +333,130 @@
           vacations.push({from,to,days:workDays,totalDays:totalDays});
           renderVacations();
           updateVacations();
+          
+          // Обновляем отображение календаря после добавления нового периода
+          fp.redraw();
         }
       }
-    }).open();
+    });
+    
+    // Открываем календарь
+    fp.open();
+    
+    // Принудительно обновляем отображение после открытия
+    setTimeout(() => fp.redraw(), 0);
   });
   function renderVacations(){
+    // Сортируем отпуска по дате начала
+    vacations.sort((a, b) => a.from.getTime() - b.from.getTime());
+    
     vacList.innerHTML='';
     vacations.forEach((v,idx)=>{
       const li=document.createElement('li');
-      li.innerHTML=`${v.from.toLocaleDateString()} – ${v.to.toLocaleDateString()} (всего ${v.totalDays} дн., из них ${v.days} раб. дн.) <button>&times;</button>`;
-      li.querySelector('button').onclick=()=>{vacations.splice(idx,1);renderVacations();updateVacations();};
+      li.innerHTML=`
+        <span>${v.from.toLocaleDateString()} – ${v.to.toLocaleDateString()} (всего ${v.totalDays} дн., из них ${v.days} раб. дн.)</span>
+        <div class="actions">
+          <button class="edit-btn" title="Редактировать период">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
+            </svg>
+          </button>
+          <button class="delete-btn" title="Удалить период">&times;</button>
+        </div>`;
+
+      // Обработчик удаления
+      li.querySelector('.delete-btn').onclick=()=>{
+        vacations.splice(idx,1);
+        renderVacations();
+        updateVacations();
+      };
+
+      // Обработчик редактирования
+      li.querySelector('.edit-btn').onclick=()=>{
+        const fp = flatpickr(fpInput,{
+          locale:'ru',
+          mode:'range',
+          dateFormat:'d.m.Y',
+          defaultDate: [v.from, v.to],
+          allowInput: false,
+          clickOpens: true,
+          onDayCreate: function(dObj, dStr, fp, dayElem) {
+            const date = dayElem.dateObj;
+            const currentDate = date.getTime();
+            // Показываем все периоды отпусков, кроме редактируемого
+            vacations.forEach((vacation, index) => {
+              if (index !== idx && 
+                  currentDate >= vacation.from.getTime() && 
+                  currentDate <= vacation.to.getTime()) {
+                dayElem.classList.add('existing-vacation');
+                if (currentDate === vacation.from.getTime()) {
+                  dayElem.classList.add('vacation-start');
+                }
+                if (currentDate === vacation.to.getTime()) {
+                  dayElem.classList.add('vacation-end');
+                }
+              }
+            });
+            
+            if (isHoliday(date)) {
+              dayElem.classList.add('holiday');
+            }
+            if (isWeekend(date) && !isHoliday(date)) {
+              dayElem.classList.add('weekend');
+            }
+          },
+          onChange: function(selectedDates) {
+            if (selectedDates.length === 2) {
+              let workDays = 0;
+              let totalDays = 0;
+              for (const d of eachDay(selectedDates[0], selectedDates[1])) {
+                totalDays++;
+                if (!isHoliday(d) && !isWeekend(d)) {
+                  workDays++;
+                }
+              }
+              fpInput._fp.altInput.placeholder = `Выберите период (всего ${totalDays} дн., из них ${workDays} раб. дн.)`;
+            }
+          },
+          onClose:(selDates)=>{
+            if(selDates.length===2){
+              const [from,to]=selDates;
+              // Проверяем пересечение с существующими отпусками, исключая текущий период
+              const hasOverlap = vacations.some((v, i) => {
+                if (i === idx) return false;
+                const newStart = from.getTime();
+                const newEnd = to.getTime();
+                const existingStart = v.from.getTime();
+                const existingEnd = v.to.getTime();
+                return (newStart <= existingEnd && newEnd >= existingStart);
+              });
+
+              if (hasOverlap) {
+                alert('Выбранный период пересекается с уже существующим отпуском. Пожалуйста, выберите другой период.');
+                return;
+              }
+
+              let workDays = 0;
+              let totalDays = 0;
+              for (const d of eachDay(from, to)) {
+                totalDays++;
+                if (!isHoliday(d) && !isWeekend(d)) {
+                  workDays++;
+                }
+              }
+              // Обновляем существующий период
+              vacations[idx] = {from,to,days:workDays,totalDays:totalDays};
+              renderVacations();
+              updateVacations();
+            }
+            fp.destroy();
+          }
+        });
+        
+        fp.open();
+        setTimeout(() => fp.redraw(), 0);
+      };
+
       vacList.appendChild(li);
     });
   }
