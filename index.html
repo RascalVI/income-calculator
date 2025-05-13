@@ -173,6 +173,7 @@
   <div class="info-text">
     <p>НДФЛ: при превышении порога строка месяца меняет цвет (13 → 15 → 18 → 20 → 22 %).</p>
     <p>Доп. выплаты: внесите разовые премии/компенсации; они добавятся к месяцу и к ним применится текущая ставка.</p>
+    <p><strong style="color: #d33;">Внимание!</strong> Расчёт отпускных ведётся по совокупному доходу (оклад, премии, надбавки и т.п.) за прошлый период; представленные суммы отпускных соответствуют выбранному совокупному доходу и не учитывают совокупный доход за прошлый расчетный период. Все расчеты носят только ознакомительный характер.</p>
   </div>
   <!-- Блок отпусков -->
   <div class="vacation-block">
@@ -244,17 +245,22 @@
   // Пересчёт оплачиваемых отпусков по месяцам
   function updateVacations(){
     // нулируем значения
-    const monthCounts=new Array(12).fill(0);
+    const monthCounts = new Array(12).fill(0);
     // Сортируем отпуска перед обработкой
     vacations.sort((a, b) => a.from.getTime() - b.from.getTime());
     
-    vacations.forEach(({from,to})=>{
-      for(const d of eachDay(new Date(from),new Date(to))){
-        const iso=dateISO(d);
-        if(!holidays2025.includes(iso)){ monthCounts[d.getMonth()]++; }
+    vacations.forEach(({from, to}) => {
+      for(const d of eachDay(new Date(from), new Date(to))) {
+        // Проверяем, является ли день рабочим (пн-пт, не праздник)
+        if (!isHoliday(d) && !isWeekend(d)) {
+          monthCounts[d.getMonth()]++;
+        }
       }
     });
-    monthCounts.forEach((cnt,i)=>{paid[i].textContent=cnt;});
+    
+    monthCounts.forEach((cnt, i) => {
+      paid[i].textContent = cnt;
+    });
     recalc();
   }
 
@@ -480,6 +486,10 @@
     const yearPlan = target * yp / 100;
     const yCoef = calcYearCoef();
 
+    // Расчет средней стоимости дня для отпускных
+    const totalWorkDays = norms.reduce((a, b) => a + b, 0); // Общее количество рабочих дней в году
+    const avgDayRate = target / totalWorkDays; // Средняя стоимость дня для отпускных
+
     cards.innerHTML='';
 
     // вспомогательная функция отрисовки карточки
@@ -522,8 +532,17 @@
       row.className='';
       const u = +unpaid[i].value||0;
       const x = +extra[i].value||0;
-      const dayCost = baseM / norms[i];
-      const baseGross = baseM - u*dayCost;
+      const vacDays = parseInt(paid[i].textContent) || 0;
+      
+      // Фактическая стоимость рабочего дня в текущем месяце
+      const actualDayRate = baseM / norms[i];
+      
+      // Расчет базовой части с учетом отпуска
+      const workDays = norms[i] - vacDays - u; // фактические рабочие дни
+      const workPay = actualDayRate * workDays; // оплата за фактические рабочие дни
+      const vacationPay = avgDayRate * vacDays; // оплата отпускных дней
+      const baseGross = workPay + vacationPay;
+
       const idxMap=[3,6,9,11].indexOf(i);
       let qPay=0;
       if(idxMap>=0){
@@ -536,7 +555,7 @@
         qPay = quarterPlan * coef * workCoeff;
       }
       const yPay = i===11 ? grossY : 0;
-      const gross = baseGross + qPay + yPay + x; baseGross + qPay + yPay + x;
+      const gross = baseGross + qPay + yPay + x;
       cumGross += gross;
       const st = steps.find(s => cumGross <= s.lim);
       const tax = gross * st.rate/100;
@@ -544,8 +563,18 @@
       cumNet += net;
 
       row.classList.add(st.cls);
-      row.querySelector('.d').textContent = Math.round(dayCost).toLocaleString('ru-RU');
-      row.querySelector('.b').textContent = Math.round(showNet.checked ? baseGross*(1-st.rate/100) : baseGross).toLocaleString('ru-RU');
+      // Показываем фактическую стоимость дня и стоимость отпускного дня (если есть отпуск)
+      row.querySelector('.d').textContent = vacDays > 0 ? 
+        `${Math.round(actualDayRate).toLocaleString('ru-RU')} (отп: ${Math.round(avgDayRate).toLocaleString('ru-RU')})` : 
+        Math.round(actualDayRate).toLocaleString('ru-RU');
+
+      // Отображаем базу и отпускные отдельно
+      const basePart = workPay;
+      const vacationPart = vacationPay;
+      row.querySelector('.b').textContent = vacDays > 0 ? 
+        `${Math.round(showNet.checked ? basePart*(1-st.rate/100) : basePart).toLocaleString('ru-RU')} (отп: +${Math.round(showNet.checked ? vacationPart*(1-st.rate/100) : vacationPart).toLocaleString('ru-RU')})` :
+        Math.round(showNet.checked ? basePart*(1-st.rate/100) : basePart).toLocaleString('ru-RU');
+
       row.querySelector('.q').textContent = qPay ? Math.round(showNet.checked ? qPay*(1-st.rate/100) : qPay).toLocaleString('ru-RU') : '';
       row.querySelector('.y').textContent = yPay ? Math.round(showNet.checked ? yPay*(1-st.rate/100) : yPay).toLocaleString('ru-RU') : '';
       row.querySelector('.t').textContent = Math.round(tax).toLocaleString('ru-RU');
