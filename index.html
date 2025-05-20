@@ -140,40 +140,111 @@
     .info-text p {
       margin: 4px 0;
     }
+    /* Для спорной годовой оценки */
+    .year-grade-cell {
+      position: relative;
+      width: 100%;
+      min-width: 0;
+    }
+    .year-grade-cell.active,
+    .year-grade-cell.inactive {
+      display: flex;
+      align-items: center;
+      min-height: unset;
+      height: 42px;
+      border-radius: 8px;
+      padding: 0;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .year-grade-cell.active {
+      background: #fff;
+      border: 1px solid #cfd2d4;
+    }
+    .year-grade-cell.inactive {
+      background: #e9ecef;
+      border: 1px solid #cfd2d4;
+    }
+    .year-grade-cell select.year-grade-select {
+      border: none;
+      background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23666' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 14px center/10px 6px;
+      font-size: 16px;
+      font-weight: 400;
+      width: 100%;
+      outline: none;
+      appearance: none;
+      padding: 12px 38px 12px 16px;
+      cursor: pointer;
+      border-radius: 8px;
+      height: 42px;
+      box-sizing: border-box;
+    }
+    .year-grade-cell input[readonly] {
+      border: none;
+      background: transparent;
+      font-size: 16px;
+      font-weight: 400;
+      width: 100%;
+      padding: 12px 16px;
+      color: #222;
+      text-align: left;
+      height: 42px;
+      border-radius: 8px;
+      box-sizing: border-box;
+    }
   </style>
 </head>
 <body>
 <div class="card">
 <h1>Калькулятор дохода (2025)</h1>
 <div class="row" style="margin-bottom:12px;">
-  <div class="col"><label>Целевой годовой совокупный доход (₽, до НДФЛ)</label><input id="targetInput" type="number" step="1000" placeholder="1 400 000"></div>
-  <div class="col"><label>Категория распределения дохода <span class="note" style="font-size:12px;color:#666;vertical-align:middle;">(База / Кв. премия / Год. премия)</span></label>
+  <div class="col"><label>Целевой годовой совокупный доход (₽, до вычета НДФЛ)</label><input id="targetInput" type="text" placeholder="1 400 000"></div>
+  <div class="col"><label>Целевой ежемесячный совокупный доход (₽, до вычета НДФЛ)</label><input id="monthlyTargetInput" type="text" placeholder="116 667"></div>
+  <div class="col"><label>Категория распределения дохода <span class="note" style="font-size:12px;color:#666;vertical-align:middle;"> <br>(База / Кв. премия / Год. премия)</span></label>
     <select id="distribution">
-      <option value="90/0/10" selected>90/0/10</option><option value="80/10/10">80/10/10</option><option value="70/20/10">70/20/10</option><option value="50/20/30">50/20/30</option><option value="100/0/0">100/0/0</option>
+      <option value="100/0/0">100/0/0</option>
+      <option value="90/10/0">90/10/0</option>
+      <option value="90/0/10">90/0/10</option>
+      <option value="80/10/10">80/10/10</option>
+      <option value="70/20/10">70/20/10</option>
+      <option value="60/20/20">60/20/20</option>
+      <option value="50/20/30">50/20/30</option>
     </select>
   </div>
 </div>
 <!-- Оценки -->
-<div style="margin-bottom:8px;font-size:15px;font-weight:600;">Результат оценки корпоративных компетенций</div>
+<h2 style="margin: 24px 0 8px 0; font-size: 22px; font-weight: 700;">Целевое распределение дохода с учетом квартальных оценок </h2>
+<div style="margin-bottom:8px;font-size:15px;font-weight:600;">Оценки корпоративных компетенций</div>
 <div class="grades-row">
   <template id="opt"><option value="1.3">A (1.3)</option><option value="1.15">B (1.15)</option><option value="1" selected>C (1)</option><option value="0.75">D (0.75)</option><option value="0">E (0)</option></template>
   <div class="col"><label>I кв.</label><select class="grade" id="g1"></select></div>
   <div class="col"><label>II кв.</label><select class="grade" id="g2"></select></div>
   <div class="col"><label>III кв.</label><select class="grade" id="g3"></select></div>
   <div class="col"><label>IV кв.</label><select class="grade" id="g4"></select></div>
-  <div class="col" style="align-self:flex-end;"><label>Годовая оценка</label><input id="yearGrade" readonly><div id="yrNote" class="note"></div></div>
+  <div class="col" style="align-self:flex-end;"><label>Годовая оценка</label><div id="yearGradeCell" class="year-grade-cell inactive"><input id="yearGrade" readonly></div><div id="yrNote" class="note"></div></div>
 </div>
-<div class="toggle"><input type="checkbox" id="showNet"><label for="showNet">Показать доход «на руки» (после НДФЛ)</label></div>
+<div class="toggle"><input type="checkbox" id="addResultGrades"><label for="addResultGrades">Добавить результаты оценки результативности</label></div>
+<div id="resultGradesBlock" style="display:none; margin-bottom: 12px;">
+  <div style="margin-bottom:8px;font-size:15px;font-weight:600;">Оценки результативности</div>
+  <div class="grades-row">
+    <div class="col"><label>I кв.</label><select class="grade-res" id="r1"></select></div>
+    <div class="col"><label>II кв.</label><select class="grade-res" id="r2"></select></div>
+    <div class="col"><label>III кв.</label><select class="grade-res" id="r3"></select></div>
+    <div class="col"><label>IV кв.</label><select class="grade-res" id="r4"></select></div>
+    <div class="col" style="align-self:flex-end;"><label>Годовая оценка</label><div id="yearGradeResCell" class="year-grade-cell inactive"><input id="yearGradeRes" readonly></div><div id="yrNoteRes" class="note"></div></div>
+  </div>
+</div>
 <div class="cards" id="cards"></div>
-<div style="font-size:19px;font-weight:600;">Совокупный доход за год <span id="totVal">0 ₽</span><span id="star" style="display:none">*</span></div>
+<div style="font-size:19px;font-weight:600;">Итого за год <span id="totVal">0 ₽</span><span id="star" style="display:none">*</span></div>
 <p class="note" id="taxInfo"></p>
-<p class="note"><em>Совокупный доход = База × 12 + Квартальные премии × 4 + Годовая премия</em></p>
+<p class="note"><em>Совокупный доход = База × 12 + Квартальная премия × 4 + Годовая премия</em></p>
+<p class="note" id="calcNote"></p>
 <details>
   <summary>Учёт праздников, отпусков и дополнительных выплат</summary>
   <div class="info-text">
     <p>НДФЛ: при превышении порога строка месяца меняет цвет (13 → 15 → 18 → 20 → 22 %).</p>
-    <p>Доп. выплаты: внесите разовые премии/компенсации; они добавятся к месяцу и к ним применится текущая ставка.</p>
-    <p><strong style="color: #d33;">Внимание!</strong> Расчёт отпускных ведётся по совокупному доходу (оклад, премии, надбавки и т.п.) за прошлый период; представленные суммы отпускных соответствуют выбранному совокупному доходу и не учитывают совокупный доход за прошлый расчетный период. Все расчеты носят только ознакомительный характер.</p>
+    <p>Доп. выплаты: заполняется сумма разовых премий и компенсационных выплат (при наличии). Учитывается в графе "Итого (после вычета НДФЛ), ₽</p>
+    <p><strong style="color: #d33;">Внимание!</strong> Расчёт отпускных ведётся по совокупному доходу (оклад, премии, надбавки и т.п.) за прошлый период; представленные суммы отпускных соответствуют выбранному совокупному доходу и не учитывают совокупный доход за прошлый расчетный период. Все расчеты носят только ознакомительный характер</p>
   </div>
   <!-- Блок отпусков -->
   <div class="vacation-block">
@@ -181,7 +252,7 @@
     <button id="addVacation">+ Добавить оплач. отпуск</button>
   </div>
   <div class="table-wrap">
-    <table id="tbl"><thead><tr><th>Месяц</th><th class="small">Норма дней</th><th class="wrap">Оплач.<br>отпуск</th><th class="wrap">Неопл.<br>отпуск</th><th class="wrap">Стоимость<br>дня, ₽</th><th>База, ₽</th><th class="wrap">Кварт.<br>премия, ₽</th><th class="wrap">Год.<br>премия, ₽</th><th>Доп. выплаты, ₽</th><th>НДФЛ, ₽</th><th>Итого, ₽</th></tr></thead><tbody></tbody><tfoot><tr><td colspan="10" style="text-align:right;font-weight:700">Фактически за год, ₽:</td><td id="fact">0</td></tr></tfoot></table>
+    <table id="tbl"><thead><tr><th>Месяц</th><th class="small">Норма дней</th><th class="wrap">Оплач.<br>отпуск</th><th class="wrap">Неопл.<br>отпуск</th><th class="wrap">Стоимость<br>дня, ₽</th><th>Базовая часть, ₽</th><th class="wrap">Кварт. премия, ₽</th><th class="wrap">Год. премия, ₽</th><th class="wrap">Итого<br>(до вычета НДФЛ), ₽</th><th>НДФЛ, ₽</th><th class="wrap">Доп. выплаты<br>(после вычета НДФЛ), ₽</th><th class="wrap">Итого (после вычета НДФЛ), ₽</th></tr></thead><tbody></tbody><tfoot><tr><td colspan="11" style="text-align:right;font-weight:700">Фактически за год, ₽:</td><td id="fact">0</td></tr></tfoot></table>
   </div>
 </details>
 </div>
@@ -203,10 +274,14 @@
 
   /* ---------- Элементы ---------- */
   const targetInput=document.getElementById('targetInput');
+  const monthlyTargetInput=document.getElementById('monthlyTargetInput');
   const distribution=document.getElementById('distribution');
-  const showNet=document.getElementById('showNet');
   const yearGrade=document.getElementById('yearGrade');
   const yrNote=document.getElementById('yrNote');
+  const yearGradeRes=document.getElementById('yearGradeRes');
+  const yrNoteRes=document.getElementById('yrNoteRes');
+  const addResultGrades=document.getElementById('addResultGrades');
+  const resultGradesBlock=document.getElementById('resultGradesBlock');
   const cards=document.getElementById('cards');
   const totVal=document.getElementById('totVal');
   const taxInfo=document.getElementById('taxInfo');
@@ -222,19 +297,24 @@
 
   /* ---------- Строим таблицу ---------- */
   const tbody=document.querySelector('#tbl tbody');
-  const paid=[],unpaid=[],extra=[];
+  const paid=[],unpaid=[],extra=[],totGrossArr=[],totNetArr=[];
   months.forEach((m,i)=>{
     const tr=document.createElement('tr');
-    tr.innerHTML=`<td>${m}</td><td>${norms[i]}</td><td class='pCell'></td><td><input type='number' class='u' min='0' max='${norms[i]}' value='0'></td><td class='d'></td><td class='b'></td><td class='q'></td><td class='y'></td><td><input type='number' class='x' value='0'></td><td class='t'></td><td class='tot'></td>`;
+    tr.innerHTML=`<td>${m}</td><td>${norms[i]}</td><td class='pCell'></td><td><input type='number' class='u' min='0' max='${norms[i]}' value='0'></td><td class='d'></td><td class='b'></td><td class='q'></td><td class='y'></td><td class='totGross'></td><td class='t'></td><td><input type='text' class='x' value='0'></td><td class='totNet'></td>`;
     tbody.appendChild(tr);
-    paid.push(tr.querySelector('.pCell')); // теперь это td, заполняем скриптом
+    paid.push(tr.querySelector('.pCell'));
     unpaid.push(tr.querySelector('.u'));
     extra.push(tr.querySelector('.x'));
+    totGrossArr.push(tr.querySelector('.totGross'));
+    totNetArr.push(tr.querySelector('.totNet'));
   });
 
   /* ---------- Оценки ---------- */
   const gradeEls=[g1,g2,g3,g4];
   gradeEls.forEach(sel=>{sel.appendChild(document.getElementById('opt').content.cloneNode(true));});
+  // Оценки результативности
+  const gradeResEls = [r1, r2, r3, r4];
+  gradeResEls.forEach(sel=>{sel.appendChild(document.getElementById('opt').content.cloneNode(true));});
 
   /* ---------- Хранилище отпусков ---------- */
   let vacations=[]; // элементы {from:Date,to:Date}
@@ -467,24 +547,161 @@
     });
   }
 
-  /* ---------- Расчёты дохода (recalc) ---------- */
-  function calcYearCoef(){
-    const counts={};gradeEls.forEach(el=>{const v=parseFloat(el.value);counts[v]=(counts[v]||0)+1;});
-    const e=Object.entries(counts).map(([v,c])=>[parseFloat(v),c]).sort((a,b)=>b[1]-a[1]||b[0]-a[0]);
-    const [v1,c1]=e[0],[v2,c2]=e[1]||[null,0];
-    if(c1>c2){yearGrade.value=`${coeffMap[v1]} (${v1})`;yrNote.textContent='';return v1;}
-    yearGrade.value=`${coeffMap[v2]} (${v2}) или ${coeffMap[v1]} (${v1})`;yrNote.textContent='по решению руководителя';return v1;
+  /* ---------- Форматирование чисел ---------- */
+  function formatNumber(number) {
+    return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
   }
+
+  function parseFormattedNumber(str) {
+    return parseInt(str.replace(/\s/g, '')) || 0;
+  }
+
+  function syncInputs(sourceInput, targetInput, multiplier) {
+    const value = parseFormattedNumber(sourceInput.value);
+    targetInput.value = formatNumber(Math.round(value * multiplier));
+  }
+
+  targetInput.addEventListener('input', function(e) {
+    // Форматируем ввод
+    const value = parseFormattedNumber(e.target.value);
+    e.target.value = formatNumber(value);
+    // Синхронизируем с месячным доходом
+    syncInputs(targetInput, monthlyTargetInput, 1/12);
+    recalc();
+  });
+
+  monthlyTargetInput.addEventListener('input', function(e) {
+    // Форматируем ввод
+    const value = parseFormattedNumber(e.target.value);
+    e.target.value = formatNumber(value);
+    // Синхронизируем с годовым доходом
+    syncInputs(monthlyTargetInput, targetInput, 12);
+    recalc();
+  });
+
+  /* ---------- Новый расчет годовой оценки по МР с учетом балльной шкалы ---------- */
+  const gradeMap = { 'A': 5, 'B': 4, 'C': 3, 'D': 2, 'E': 1 };
+  const gradeLettersByValue = {5:'A',4:'B',3:'C',2:'D',1:'E'};
+  const coeffByLetter = { 'A': 1.3, 'B': 1.15, 'C': 1, 'D': 0.75, 'E': 0 };
+  const letterByCoeff = { 1.3: 'A', 1.15: 'B', 1: 'C', 0.75: 'D', 0: 'E' };
+
+  function coeffToBall(coeff) {
+    // 1.3->5, 1.15->4, 1->3, 0.75->2, 0->1
+    if (coeff >= 1.25) return 5;
+    if (coeff >= 1.07) return 4;
+    if (coeff >= 0.87) return 3;
+    if (coeff >= 0.37) return 2;
+    return 1;
+  }
+  function ballToCoeff(ball) {
+    return coeffByLetter[gradeLettersByValue[ball]];
+  }
+
+  function getGradeByBall(avg) {
+    // Возвращает: {letters: ["B"], range: "3,7–4,49"} или {letters: ["B","C"], range: "3,5–3,69"}
+    if (avg >= 4.7) return {letters:['A'], range:'≥ 4,7'};
+    if (avg >= 4.5) return {letters:['A','B'], range:'4,5–4,69'};
+    if (avg >= 3.7) return {letters:['B'], range:'3,7–4,49'};
+    if (avg >= 3.5) return {letters:['B','C'], range:'3,5–3,69'};
+    if (avg >= 2.7) return {letters:['C'], range:'2,7–3,49'};
+    if (avg >= 2.5) return {letters:['C','D'], range:'2,5–2,69'};
+    if (avg >= 1.7) return {letters:['D'], range:'1,7–2,49'};
+    if (avg >= 1.5) return {letters:['D','E'], range:'1,5–1,69'};
+    return {letters:['E'], range:'< 1,5'};
+  }
+
+  function renderYearGradeBlock(avg, el, selectId, cellId) {
+    // avg — средний балл, el — input для вывода, selectId — id для селекта, cellId — id контейнера
+    const cell = document.getElementById(cellId);
+    const grade = getGradeByBall(avg);
+    // Проверяем, есть ли уже селектор с теми же опциями
+    let oldSel = cell.querySelector('select.year-grade-select');
+    if (grade.letters.length === 1) {
+      cell.className = 'year-grade-cell inactive';
+      // Если уже есть input с нужным значением, не пересоздаём
+      let oldInput = cell.querySelector('input[readonly]');
+      if (oldInput && oldInput.value === grade.letters[0]) return coeffByLetter[grade.letters[0]];
+      cell.innerHTML = '';
+      const inp = document.createElement('input');
+      inp.id = el.id;
+      inp.readOnly = true;
+      inp.value = grade.letters[0];
+      cell.appendChild(inp);
+      if (cell.parentElement.querySelector('.note')) cell.parentElement.querySelector('.note').textContent = '';
+      return coeffByLetter[grade.letters[0]];
+    } else {
+      cell.className = 'year-grade-cell active';
+      // Проверяем, совпадает ли набор опций
+      let needUpdate = true;
+      if (oldSel) {
+        const opts = Array.from(oldSel.options).map(o=>o.textContent);
+        if (opts.length === grade.letters.length && opts.every((o,i)=>o===grade.letters[i])) {
+          needUpdate = false;
+        }
+      }
+      if (!oldSel || needUpdate) {
+        cell.innerHTML = '';
+        const sel = document.createElement('select');
+        sel.className = 'year-grade-select';
+        sel.id = selectId;
+        grade.letters.forEach(letter => {
+          const opt = document.createElement('option');
+          opt.value = coeffByLetter[letter];
+          opt.textContent = letter;
+          sel.appendChild(opt);
+        });
+        cell.appendChild(sel);
+        if (cell.parentElement.querySelector('.note')) cell.parentElement.querySelector('.note').textContent = 'По решению руководителя';
+        return parseFloat(sel.value);
+      } else {
+        // Уже есть селектор с нужными опциями, просто возвращаем выбранное значение
+        if (cell.parentElement.querySelector('.note')) cell.parentElement.querySelector('.note').textContent = 'По решению руководителя';
+        return parseFloat(oldSel.value);
+      }
+    }
+  }
+
+  function calcYearCoef(){
+    // Считаем средний балл
+    const vals = gradeEls.map(el=>coeffToBall(parseFloat(el.value)));
+    const avg = vals.reduce((a,b)=>a+b,0)/vals.length;
+    return renderYearGradeBlock(avg, yearGrade, 'yearGradeSelect', 'yearGradeCell');
+  }
+  function calcYearCoefRes(){
+    const vals = gradeResEls.map(el=>coeffToBall(parseFloat(el.value)));
+    const avg = vals.reduce((a,b)=>a+b,0)/vals.length;
+    return renderYearGradeBlock(avg, yearGradeRes, 'yearGradeResSelect', 'yearGradeResCell');
+  }
+
+  // --- Обработка выбора из выпадающего списка итоговой оценки ---
+  document.addEventListener('change', function(e) {
+    if (e.target.classList.contains('year-grade-select')) {
+      recalc();
+    }
+  });
+
   function getDist(){return distribution.value.split('/').map(Number);}  
   function recalc(){
-    const target = parseFloat(targetInput.value.replace(/\s/g,'')) || parseFloat(targetInput.placeholder.replace(/\s/g,'')) || 0;
+    const target = parseFormattedNumber(targetInput.value) || parseFormattedNumber(targetInput.placeholder) || 0;
     const [bp, qp, yp] = distribution.value.split('/').map(Number);
 
     const baseYear = target * bp / 100;
     const baseM = baseYear / 12;
     const quarterPlan = target * qp / 100 / 4;
     const yearPlan = target * yp / 100;
-    const yCoef = calcYearCoef();
+    // --- Получаем коэффициенты ---
+    let yCoef = calcYearCoef();
+    // Если есть селект, берем выбранное значение
+    const selYear = document.getElementById('yearGradeSelect');
+    if (selYear) yCoef = parseFloat(selYear.value);
+    let yCoefRes = 1;
+    let kInt = yCoef;
+    if (addResultGrades.checked) {
+      yCoefRes = calcYearCoefRes();
+      const selRes = document.getElementById('yearGradeResSelect');
+      if (selRes) yCoefRes = parseFloat(selRes.value);
+      kInt = (yCoef + yCoefRes) / 2;
+    }
 
     // Расчет средней стоимости дня для отпускных
     const totalWorkDays = norms.reduce((a, b) => a + b, 0); // Общее количество рабочих дней в году
@@ -503,27 +720,30 @@
     let cumulativeGross = 0;
 
     // Базовая
-    makeCard('База / мес.', showNet.checked
-      ? baseM * (1 - 0.13)
-      : baseM
-    );
+    makeCard('База / мес.', baseM);
 
     // Квартальные
     for(let q=0; q<4; q++){
       const coef = parseFloat(gradeEls[q].value);
-      const grossQ = quarterPlan * coef;
+      let coefRes = 1;
+      let kIntQ = coef;
+      if (addResultGrades.checked) {
+        coefRes = parseFloat(gradeResEls[q].value);
+        kIntQ = (coef + coefRes) / 2;
+      }
+      const grossQ = quarterPlan * kIntQ;
       cumulativeGross += grossQ;
       const stepQ = steps.find(s => cumulativeGross <= s.lim);
       const netQ = grossQ * (1 - stepQ.rate/100);
-      makeCard(`Q${q+1} премия`, showNet.checked ? netQ : grossQ);
+      makeCard(`Q${q+1} премия`, netQ);
     }
 
     // Годовая
-    const grossY = yearPlan * yCoef;
+    let grossY = yearPlan * kInt;
     cumulativeGross += grossY;
     const stepY = steps.find(s => cumulativeGross <= s.lim);
     const netY = grossY * (1 - stepY.rate/100);
-    makeCard('Годовая премия', showNet.checked ? netY : grossY);
+    makeCard('Годовая премия', netY);
 
     // Таблица и итог
     let cumGross=0, cumNet=0;
@@ -531,18 +751,21 @@
       const row = tbody.rows[i];
       row.className='';
       const u = +unpaid[i].value||0;
-      const x = +extra[i].value||0;
+      const x = parseFormattedNumber(extra[i].value)||0;
       const vacDays = parseInt(paid[i].textContent) || 0;
-      
       // Фактическая стоимость рабочего дня в текущем месяце
       const actualDayRate = baseM / norms[i];
-      
-      // Расчет базовой части с учетом отпуска
-      const workDays = norms[i] - vacDays - u; // фактические рабочие дни
-      const workPay = actualDayRate * workDays; // оплата за фактические рабочие дни
-      const vacationPay = avgDayRate * vacDays; // оплата отпускных дней
-      const baseGross = workPay + vacationPay;
-
+      // Новый расчет отпускных по ТК РФ
+      const avgVacationDay = target / 12 / 29.3;
+      // Оплата за фактически отработанные дни
+      const workDays = norms[i] - vacDays - u;
+      const workPay = actualDayRate * workDays;
+      // Оплата отпускных по среднему дневному заработку
+      const vacationPay = avgVacationDay * vacDays;
+      // Базовая часть — только за отработанные дни
+      const baseGross = workPay;
+      // Отпускные — отдельной строкой
+      const vacationGross = vacationPay;
       const idxMap=[3,6,9,11].indexOf(i);
       let qPay=0;
       if(idxMap>=0){
@@ -555,41 +778,51 @@
         qPay = quarterPlan * coef * workCoeff;
       }
       const yPay = i===11 ? grossY : 0;
-      const gross = baseGross + qPay + yPay + x;
+      // Итоговые начисления: базовая часть + отпускные + премии + доп. выплаты
+      const gross = baseGross + vacationGross + qPay + yPay + x;
       cumGross += gross;
       const st = steps.find(s => cumGross <= s.lim);
-      const tax = gross * st.rate/100;
-      const net = gross - tax;
-      cumNet += net;
-
+      const tax = (baseGross + vacationGross + qPay + yPay) * st.rate/100;
+      const net = (baseGross + vacationGross + qPay + yPay) - tax;
+      cumNet += net + x;
       row.classList.add(st.cls);
-      // Показываем фактическую стоимость дня и стоимость отпускного дня (если есть отпуск)
+      // Стоимость дня
       row.querySelector('.d').textContent = vacDays > 0 ? 
-        `${Math.round(actualDayRate).toLocaleString('ru-RU')} (отп: ${Math.round(avgDayRate).toLocaleString('ru-RU')})` : 
+        `${Math.round(actualDayRate).toLocaleString('ru-RU')} (отп: ${Math.round(avgVacationDay).toLocaleString('ru-RU')})` : 
         Math.round(actualDayRate).toLocaleString('ru-RU');
-
-      // Отображаем базу и отпускные отдельно
-      const basePart = workPay;
-      const vacationPart = vacationPay;
-      row.querySelector('.b').textContent = vacDays > 0 ? 
-        `${Math.round(showNet.checked ? basePart*(1-st.rate/100) : basePart).toLocaleString('ru-RU')} (отп: +${Math.round(showNet.checked ? vacationPart*(1-st.rate/100) : vacationPart).toLocaleString('ru-RU')})` :
-        Math.round(showNet.checked ? basePart*(1-st.rate/100) : basePart).toLocaleString('ru-RU');
-
-      row.querySelector('.q').textContent = qPay ? Math.round(showNet.checked ? qPay*(1-st.rate/100) : qPay).toLocaleString('ru-RU') : '';
-      row.querySelector('.y').textContent = yPay ? Math.round(showNet.checked ? yPay*(1-st.rate/100) : yPay).toLocaleString('ru-RU') : '';
+      // Базовая часть
+      row.querySelector('.b').textContent = Math.round(baseGross).toLocaleString('ru-RU');
+      // Квартальная премия
+      row.querySelector('.q').textContent = qPay ? Math.round(qPay).toLocaleString('ru-RU') : '';
+      // Годовая премия
+      row.querySelector('.y').textContent = yPay ? Math.round(yPay).toLocaleString('ru-RU') : '';
+      row.querySelector('.totGross').textContent = Math.round(gross - x).toLocaleString('ru-RU');
       row.querySelector('.t').textContent = Math.round(tax).toLocaleString('ru-RU');
-      row.querySelector('.tot').textContent = Math.round(showNet.checked ? net : gross).toLocaleString('ru-RU');
+      row.querySelector('.totNet').textContent = Math.round(net + x).toLocaleString('ru-RU');
     });
 
-    const finalVal = showNet.checked ? cumNet : cumGross;
+    const finalVal = cumNet;
     totVal.textContent = Math.round(finalVal).toLocaleString('ru-RU')+' ₽';
-    taxInfo.textContent = showNet.checked ? '' : steps.find(s=>cumGross<=s.lim).info;
+    // Пояснение про НДФЛ по итоговой начисленной сумме (cumGross)
+    const stepInfo = steps.find(s=>cumGross<=s.lim).info;
+    taxInfo.textContent = stepInfo;
     fact.textContent = Math.round(finalVal).toLocaleString('ru-RU');
+
+    // Динамическое примечание
+    const calcNote = document.getElementById('calcNote');
+    if (addResultGrades.checked) {
+      calcNote.textContent = 'Итоговая сумма рассчитана исходя из целевого размера совокупного дохода с учетом оценок по корпоративным компетенциям и результативности.';
+    } else {
+      calcNote.textContent = 'Итоговая сумма рассчитана исходя из целевого размера совокупного дохода с учетом оценок по корпоративным компетенциям.';
+    }
   }
 
   /* ---------- Обработчики ---------- */
   document.querySelectorAll('input,select').forEach(el=>el.addEventListener('input', recalc));
-  showNet.addEventListener('change', recalc);
+  addResultGrades.addEventListener('change', function() {
+    resultGradesBlock.style.display = this.checked ? '' : 'none';
+    recalc();
+  });
 
   // Функция для проверки праздничных дней
   function isHoliday(date) {
@@ -610,6 +843,15 @@
     }
     return day === 0 || day === 6;
   }
+
+  // Форматирование для всех полей .x (доп. выплаты)
+  extra.forEach(input => {
+    input.addEventListener('input', function(e) {
+      const value = parseFormattedNumber(e.target.value);
+      e.target.value = formatNumber(value);
+      recalc();
+    });
+  });
 
   // Инициализация
   recalc();
