@@ -421,11 +421,6 @@
       box-sizing: border-box;
     }
 
-    .toggle label {
-      display: inline;
-      margin-bottom: 0;
-    }
-
     /* Выделение строки Итого */
     #totalsRow {
       background: #eef5ed;
@@ -443,64 +438,6 @@
       font-weight: 700;
     }
 
-    .toggle-switch-wrap {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      min-height: 26px;
-    }
-    .toggle-label {
-      font-size: 15px;
-      color: #666;
-      transition: color 0.2s;
-      cursor: pointer;
-      user-select: none;
-      line-height: 26px;
-      height: 26px;
-      display: flex;
-      align-items: center;
-    }
-    .toggle-label.active {
-      color: #2067D9;
-      font-weight: 600;
-    }
-    .toggle-switch {
-      position: relative;
-      display: inline-block;
-      width: 48px;
-      height: 26px;
-    }
-    .toggle-switch input {
-      opacity: 0;
-      width: 0;
-      height: 0;
-    }
-    .slider {
-      position: absolute;
-      cursor: pointer;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background-color: #ccc;
-      transition: .3s;
-      border-radius: 26px;
-    }
-    .slider:before {
-      position: absolute;
-      content: "";
-      height: 20px;
-      width: 20px;
-      left: 3px;
-      bottom: 3px;
-      background-color: white;
-      transition: .3s;
-      border-radius: 50%;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-    }
-    .toggle-switch input:checked + .slider {
-      background-color: #2067D9;
-    }
-    .toggle-switch input:checked + .slider:before {
-      transform: translateX(22px);
-    }
     #startDateWrap input {
       vertical-align: middle;
       height: 38px;
@@ -519,6 +456,76 @@
     }
     .highlight-update {
       animation: highlightFade 0.5s ease-out;
+    }
+
+    /* Стили для всплывающей подсказки */
+    .info-tooltip-container {
+        position: relative;
+        display: inline-block;
+        margin-left: 5px; /* Небольшой отступ от суммы */
+        cursor: pointer;
+        vertical-align: middle;
+    }
+
+    .info-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        border: 1px solid #2067D9;
+        color: #2067D9;
+        font-size: 12px; /* Немного уменьшим размер шрифта, чтобы уместился */
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        vertical-align: 4px; /* Приподнять иконку */
+    }
+
+    .info-icon:hover {
+        background-color: #2067D9;
+        color: #fff;
+    }
+
+    .tooltip-text {
+        visibility: hidden;
+        opacity: 0;
+        width: 250px; /* Ограничиваем ширину подсказки */
+        background-color: #555;
+        color: #fff;
+        text-align: center;
+        border-radius: 6px;
+        padding: 10px;
+        position: absolute;
+        z-index: 1;
+        bottom: 125%; /* Располагаем над иконкой */
+        left: 50%;
+        transform: translateX(-50%); /* Центрируем подсказку по ее собственной ширине */
+        opacity: 0;
+        transition: opacity 0.3s;
+        font-size: 12px;
+        line-height: 1.4;
+        max-width: 280px; /* Максимальная ширина перед переносом текста */
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+
+    /* Стрелка подсказки */
+    .tooltip-text::after {
+        content: "";
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        margin-left: -5px;
+        border-width: 5px;
+        border-style: solid;
+        border-color: #2067D9 transparent transparent transparent;
+    }
+
+    /* Показать подсказку при наведении на контейнер */
+    .info-tooltip-container:hover .tooltip-text {
+        visibility: visible;
+        opacity: 1;
     }
   </style>
 </head>
@@ -552,7 +559,6 @@
 <!-- Оценки -->
     <h2 style="margin: 24px 0 16px 0; font-size: 22px; font-weight: 700;">Целевое распределение дохода с учетом
       квартальных оценок </h2>
-    <div style="margin-bottom:8px;font-size:15px;font-weight:600;">Оценка корпоративных компетенций</div>
 <div class="grades-row">
       <template id="opt">
         <option value="1.3">A (1.3)</option>
@@ -561,7 +567,7 @@
         <option value="0.75">D (0.75)</option>
         <option value="0">E (0)</option>
       </template>
-       <div class="col"></div>
+       <div class="col" style="margin-bottom:8px;font-size:15px;font-weight:600; align-self: end;">Оценка корпоративных компетенций</div>
   <div class="col"><label>I кв.</label><select class="grade" id="g1"></select></div>
   <div class="col"><label>II кв.</label><select class="grade" id="g2"></select></div>
   <div class="col"><label>III кв.</label><select class="grade" id="g3"></select></div>
@@ -574,9 +580,8 @@
     <div class="toggle"><input type="checkbox" id="addResultGrades"><label for="addResultGrades">Добавить оценку
         результативности</label></div>
     <div id="resultGradesBlock" style="display:none; margin-bottom: 12px;">
-      <div style="margin-bottom:8px;font-size:15px;font-weight:600;">Оценки результативности</div>
-      <div class="grades-row">
-          <div class="col"></div>
+          <div class="grades-row">
+          <div class="col" style="margin-bottom:8px;font-size:15px;font-weight:600; align-self: end;">Оценки результативности</div>
         <div class="col"><label>I кв.</label><select class="grade-res" id="r1"></select></div>
         <div class="col"><label>II кв.</label><select class="grade-res" id="r2"></select></div>
         <div class="col"><label>III кв.</label><select class="grade-res" id="r3"></select></div>
@@ -589,38 +594,40 @@
     </div>
 <div class="cards" id="cards"></div>
     <div style="font-size:19px;font-weight:600;">Итого за год (до вычета НДФЛ) <span id="totVal">0 ₽</span><span
-        id="star" style="display:none">*</span></div>
+        id="star" style="display:none"></span>
+        <span class="info-tooltip-container">
+            <span class="info-icon">i</span>
+            <span class="tooltip-text">Совокупный доход = Базовая часть*12 + Квартальная премия × 4 + Годовая премия</span>
+        </span>
+    </div>
 <p class="note" id="taxInfo"></p>
-    <p class="note"><em>Совокупный доход = Базовая часть × 12 + Квартальная премия × 4 + Годовая премия</em></p>
-    <p class="note" id="calcNote"></p>
-<details>
-  <summary>Учёт праздников, отпусков и дополнительных выплат</summary>
+        <p class="note" id="calcNote"></p>
+  <details style="margin-top: 44px;">
+    <summary style="font-size: 22px;">Детализированный расчёт
+        <span class="info-tooltip-container">
+            <span class="info-icon">i</span>
+            <span class="tooltip-text">с учётом праздников, отпусков и дополнительных выплат</span>
+        </span>
+    </summary>
+      <div style="margin-top: 12px; margin-bottom: 12px; display: flex; align-items: center; gap: 10px; padding-top: 10px; padding-bottom: 10px;">
+    <input type="checkbox" id="isNewEmployee">
+    <label for="isNewEmployee" id="labelNewEmployee">Я новый сотрудник</label>
+    <div id="startDateWrap" style="display:none; margin-left:12px; display:flex; align-items:center;">
+      <input id="startDate" type="text" placeholder="дд.мм.гггг" style="width:140px;">
+      <span id="calculationPeriodMsg" style="font-size:13px; color:#555; margin-left:12px; display:none;"></span>
+    </div>
+  </div>
   <div class="info-text">
     <p>НДФЛ: при превышении порога строка месяца меняет цвет (13 → 15 → 18 → 20 → 22 %).</p>
-        <p>Доп. выплаты — планируемые выплаты</p>
-        <p><strong style="color: #d33;">Внимание!</strong> Расчёт отпускных ведётся по выбранному совокупному доходу и не учитывает фактический средний заработок за прошлый период. <br>Все расчеты носят только
-          ознакомительный характер</p>
+                <p><strong style="color: #d33;">Внимание!</strong> Расчёт отпускных ведётся по выбранному совокупному доходу и не учитывает фактический средний заработок за прошлый период. <br>Все расчеты носят только
+          ознакомительный характер.</p>
   </div>
-  <!-- Блок отпусков -->
-  <div class="vacation-block">
+  <div class="vacation-block" style="margin: 0 0 16px 0;">
     <ul id="vacList"></ul>
-    <div style="margin-bottom: 12px;">
-      <div class="toggle-switch-wrap">
-        <span id="labelFullYear" class="toggle-label active">Полный год</span>
-        <label class="toggle-switch">
-          <input type="checkbox" id="isNewEmployee">
-          <span class="slider"></span>
-        </label>
-        <span id="labelNewEmployee" class="toggle-label">Новый сотрудник</span>
-        <div id="startDateWrap" style="display:none; margin-left:12px; display:flex; align-items:center;">
-          <input id="startDate" type="text" placeholder="дд.мм.гггг" style="width:140px;">
-          <span id="calculationPeriodMsg" style="font-size:13px; color:#555; margin-left:12px; display:none;"></span>
-        </div>
-      </div>
-    </div>
-    <div id="calculationPeriodMsg" style="font-size:13px; color:#555; margin-top: 4px; display:none;"></div>
-    <button id="addVacation">+ Добавить оплач. отпуск</button>
   </div>
+  
+  <button id="addVacation" style="margin-bottom: 16px;">+ Добавить оплач. отпуск</button>
+
   <div class="table-wrap">
         <table id="tbl">
           <thead>
@@ -633,7 +640,7 @@
               <th>Базовая часть, ₽</th>
               <th class="wrap">Квартальная<br>премия, ₽</th>
               <th class="wrap">Годовая<br>премия, ₽</th>
-              <th class="wrap">Доп.<br>выплаты, ₽</th>
+              <th class="wrap">Доп. выплаты — планируемые выплаты, ₽</th>
               <th class="wrap">Итого<br>(до вычета НДФЛ), ₽</th>
               <th>НДФЛ, ₽</th>
               <th class="wrap">Итого<br>(после вычета НДФЛ), ₽</th>
@@ -1321,12 +1328,12 @@
       }
       let totalY = yearPlan * kInt;
       let totalWithCoeffs = totalBase + totalQ + totalY;
-      totVal.textContent = formatNumber(Math.round(totalWithCoeffs)) + ' ₽';
-      // Анимация подсветки итога
-      totVal.classList.remove('highlight-update');
-      // Принудительно перерисовать элемент, чтобы анимация сработала заново
-      void totVal.offsetWidth;
-      totVal.classList.add('highlight-update');
+
+      const oldTotal = parseFormattedNumber(totVal.textContent) || 0;
+      const newTotal = Math.round(totalWithCoeffs);
+
+      // Анимация счетчика
+      animateValue(totVal, oldTotal, newTotal, 500); // 500 мс длительность анимации
 
       // Пояснение про НДФЛ по итоговой начисленной сумме (cumGross)
       const stepInfo = steps.find(s => cumGross <= s.lim).info;
@@ -1496,10 +1503,10 @@
   // Инициализация видимости контейнера даты и текста метки при загрузке страницы
   if (isNewEmployee.checked) {
       startDateWrap.style.display = 'flex';
-      labelNewEmployee.textContent = 'Новый сотрудник с';
+      labelNewEmployee.textContent = 'Я новый сотрудник с';
   } else {
       startDateWrap.style.display = 'none';
-      labelNewEmployee.textContent = 'Новый сотрудник';
+      labelNewEmployee.textContent = 'Я новый сотрудник';
   }
 
   flatpickr(startDateInput, {
@@ -1531,12 +1538,12 @@
     // Управляем видимостью контейнера даты и текстом метки
     if (this.checked) {
         startDateWrap.style.display = 'flex';
-        labelNewEmployee.textContent = 'Новый сотрудник с';
+        labelNewEmployee.textContent = 'Я новый сотрудник с';
         labelNewEmployee.classList.add('active');
         labelFullYear.classList.remove('active');
     } else {
         startDateWrap.style.display = 'none';
-        labelNewEmployee.textContent = 'Новый сотрудник';
+        labelNewEmployee.textContent = 'Я новый сотрудник';
         labelNewEmployee.classList.remove('active');
         labelFullYear.classList.add('active');
     }
@@ -1548,6 +1555,24 @@
     }
     recalc();
   });
+
+  // Функция для анимации числового значения
+  function animateValue(obj, start, end, duration) {
+      let startTimestamp = null;
+      const step = (timestamp) => {
+          if (!startTimestamp) startTimestamp = timestamp;
+          const elapsed = timestamp - startTimestamp;
+          const progress = Math.min(elapsed / duration, 1);
+          const currentValue = Math.floor(progress * (end - start) + start);
+          obj.textContent = formatNumber(currentValue) + ' ₽';
+          if (progress < 1) {
+              window.requestAnimationFrame(step);
+          } else {
+               obj.textContent = formatNumber(end) + ' ₽'; // Убедимся, что конечное значение точно установлено
+          }
+      };
+      window.requestAnimationFrame(step);
+  }
 
   // Инициализация
   recalc();
