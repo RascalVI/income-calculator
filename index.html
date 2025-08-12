@@ -611,7 +611,7 @@
     </summary>
       <div style="margin-top: 12px; margin-bottom: 12px; display: flex; align-items: center; gap: 10px; padding-top: 10px; padding-bottom: 10px;">
     <input type="checkbox" id="isNewEmployee">
-    <label for="isNewEmployee" id="labelNewEmployee">Я новый сотрудник</label>
+    <label for="isNewEmployee" id="labelNewEmployee">Принят на работу в 2025 году</label>
     <div id="startDateWrap" style="display:none; margin-left:12px; display:flex; align-items:center;">
       <input id="startDate" type="text" placeholder="дд.мм.гггг" style="width:140px;">
       <span id="calculationPeriodMsg" style="font-size:13px; color:#555; margin-left:12px; display:none;"></span>
@@ -633,9 +633,9 @@
           <thead>
             <tr>
               <th>Месяц</th>
-              <th class="small">Норма дней</th>
-              <th class="wrap">Оплач.<br>отпуск</th>
-              <th class="wrap">Неопл.<br>отпуск</th>
+              <th class="small">Норма дней<br><span class="note">раб. дн.</span></th>
+              <th class="wrap">Оплач.<br>отпуск<br><span class="note">раб. дн.</span></th>
+              <th class="wrap">Неопл.<br>отпуск<br><span class="note">раб. дн.</span></th>
               <th class="wrap">Стоимость<br>дня, ₽</th>
               <th>Базовая часть, ₽</th>
               <th class="wrap">Квартальная<br>премия, ₽</th>
@@ -735,23 +735,34 @@
 
   // Пересчёт оплачиваемых отпусков по месяцам
     function updateVacations() {
-    // нулируем значения
-    const monthCounts = new Array(12).fill(0);
+    // нулируем значения для рабочих дней и общих дней отпуска
+    const monthWorkDays = new Array(12).fill(0);
+    const monthTotalDays = new Array(12).fill(0);
     // Сортируем отпуска перед обработкой
     vacations.sort((a, b) => a.from.getTime() - b.from.getTime());
     
-      vacations.forEach(({ from, to }) => {
+      vacations.forEach(({ from, to, totalDays }) => {
+        // Для отпускных учитываем все календарные дни отпуска в месяце начала отпуска
+        const startMonth = from.getMonth();
+        monthTotalDays[startMonth] = totalDays;
+        
         for (const d of eachDay(new Date(from), new Date(to))) {
         // Проверяем, является ли день рабочим (пн-пт, не праздник)
         if (!isHoliday(d) && !isWeekend(d)) {
-          monthCounts[d.getMonth()]++;
+          monthWorkDays[d.getMonth()]++;
         }
       }
     });
     
-    monthCounts.forEach((cnt, i) => {
-      paid[i].textContent = cnt;
+    monthWorkDays.forEach((cnt, i) => {
+      paid[i].textContent = Math.round(cnt);
     });
+    
+    // Сохраняем общее количество дней отпуска для каждого месяца в data-атрибуте
+    monthTotalDays.forEach((cnt, i) => {
+      paid[i].setAttribute('data-total-days', Math.round(cnt));
+    });
+    
     recalc();
   }
 
@@ -1130,8 +1141,9 @@
 
       // Функция форматирования коэффициента
       const formatCoeff = (coeff) => {
-        const formatted = coeff.toFixed(2);
-        return formatted.endsWith('.00') ? Math.round(coeff).toString() : formatted;
+        // Показываем 3 знака после запятой, но убираем лишние нули в конце
+        const formatted = coeff.toFixed(3);
+        return formatted.replace(/\.?0+$/, '');
     };
 
     let cumulativeGross = 0;
@@ -1201,8 +1213,9 @@
         // Оплата за фактически отработанные дни
         const workDays = isActive ? (activeDays - vacDays - u) : 0;
         const workPay = actualDayRate * workDays;
-        // Оплата отпускных по среднему дневному заработку
-        const vacationPay = isActive ? avgVacationDay * vacDays : 0;
+        // Оплата отпускных по среднему дневному заработку - за все календарные дни отпуска
+        const totalVacationDays = parseInt(paid[i].getAttribute('data-total-days')) || vacDays;
+        const vacationPay = isActive ? avgVacationDay * totalVacationDays : 0;
         // Базовая часть — только за отработанные дни
         const baseGross = workPay;
         // Отпускные — отдельной строкой
@@ -1240,7 +1253,7 @@
           const workCoeff = qNorm ? (qActiveDays - qAbsentPaid - qAbsentUnpaid) / qNorm : 0;
           qPay = quarterPlan * coefFinal * (isActive ? workCoeff : 0);
       }
-        // --- Годовая премия с учетом неоплачиваемых и оплачиваемых отпусков ---
+        // --- Годовая премия с учетом только неоплачиваемых отпусков ---
         let yPay = 0;
         if (i === 11) {
           // Считаем коэффициент отработанных дней за год
@@ -1262,9 +1275,9 @@
               }
             }
           }
-          const totalPaid = paid.reduce((a, td) => a + (parseInt(td.textContent) || 0), 0);
+          // Учитываем только неоплачиваемые отпуска, оплачиваемые отпуска НЕ влияют на годовую премию
           const totalUnpaid = unpaid.reduce((a, input) => a + (+input.value || 0), 0);
-          const yearWorkCoeff = totalNorm ? (totalActive - totalPaid - totalUnpaid) / totalNorm : 0;
+          const yearWorkCoeff = totalNorm ? (totalActive - totalUnpaid) / totalNorm : 0;
           yPay = grossY * yearWorkCoeff;
         }
         // Итоговые начисления: базовая часть + отпускные + премии + доп. выплаты
@@ -1291,9 +1304,10 @@
       cumNet += net;
         row.classList.add(steps.find(s => cumGross <= s.lim).cls);
         // Стоимость дня
-      row.querySelector('.d').textContent = vacDays > 0 ? 
-          `${Math.round(actualDayRate).toLocaleString('ru-RU')} (отп: ${Math.round(avgVacationDay).toLocaleString('ru-RU')})` :
-        Math.round(actualDayRate).toLocaleString('ru-RU');
+        const totalVacationDaysDisplay = parseInt(paid[i].getAttribute('data-total-days')) || vacDays;
+        row.querySelector('.d').textContent = vacDays > 0 ? 
+            `${Math.round(actualDayRate).toLocaleString('ru-RU')} (отп: ${Math.round(avgVacationDay).toLocaleString('ru-RU')} × ${totalVacationDaysDisplay})` :
+          Math.round(actualDayRate).toLocaleString('ru-RU');
         // Базовая часть
         row.querySelector('.b').textContent = isActive ? Math.round(baseGross).toLocaleString('ru-RU') : '';
         // Квартальная премия
@@ -1503,10 +1517,10 @@
   // Инициализация видимости контейнера даты и текста метки при загрузке страницы
   if (isNewEmployee.checked) {
       startDateWrap.style.display = 'flex';
-      labelNewEmployee.textContent = 'Я новый сотрудник с';
+      labelNewEmployee.textContent = 'Принят на работу в 2025 году с';
   } else {
       startDateWrap.style.display = 'none';
-      labelNewEmployee.textContent = 'Я новый сотрудник';
+      labelNewEmployee.textContent = 'Принят на работу в 2025 году';
   }
 
   flatpickr(startDateInput, {
@@ -1538,12 +1552,12 @@
     // Управляем видимостью контейнера даты и текстом метки
     if (this.checked) {
         startDateWrap.style.display = 'flex';
-        labelNewEmployee.textContent = 'Я новый сотрудник с';
+        labelNewEmployee.textContent = 'Принят на работу в 2025 году с';
         labelNewEmployee.classList.add('active');
         labelFullYear.classList.remove('active');
     } else {
         startDateWrap.style.display = 'none';
-        labelNewEmployee.textContent = 'Я новый сотрудник';
+        labelNewEmployee.textContent = 'Принят на работу в 2025 году';
         labelNewEmployee.classList.remove('active');
         labelFullYear.classList.add('active');
     }
