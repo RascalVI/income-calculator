@@ -1,0 +1,1597 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Калькулятор дохода 2026 — рабочая версия</title>
+  <!-- Flatpickr для выбора диапазона дат -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ru.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: "Century Gothic", Arial, sans-serif
+    }
+
+    body {
+      margin: 0;
+      padding: 40px;
+      background: #f5f6f7;
+      display: flex;
+      justify-content: center
+    }
+
+    .card {
+      width: 1100px;
+      background: #fff;
+      border-radius: 14px;
+      padding: 40px 48px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, .06)
+    }
+
+    h1 {
+      margin: 0 0 28px;
+      font-size: 34px;
+      font-weight: 700
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 600;
+      font-size: 15px
+    }
+
+    input,
+    select {
+      padding: 12px 14px;
+      font-size: 15px;
+      border: 1px solid #cfd2d4;
+      border-radius: 8px;
+      background: #fff;
+      outline: none;
+      color: #000;
+      width: 100%
+    }
+
+    input::placeholder {
+      color: #a8a8a8
+    }
+
+    input[type=number]::-webkit-outer-spin-button,
+    input[type=number]::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0
+    }
+
+    input[type=number] {
+      -moz-appearance: textfield
+    }
+
+    select {
+      appearance: none;
+      background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23666' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 14px center/10px 6px;
+      color: #000
+    }
+
+    .row {
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap
+    }
+
+    .col {
+      flex: 1 1 260px
+    }
+
+   .grades-row {
+      display: -ms-grid;
+      display: grid;
+      -ms-grid-columns: 1fr 16px 1fr 16px 1fr 16px 1fr 16px 1fr 16px 1fr;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 16px;
+      margin-bottom: 16px
+    }
+
+    /* .grades-row .col {
+      flex: 1 0 160px
+    } */
+
+    #yearGrade {
+      background: #e9ecef;
+      border: 1px solid #cfd2d4;
+      border-radius: 8px;
+      padding: 12px;
+      text-align: left;
+      white-space: nowrap;
+      overflow: hidden
+    }
+
+    #yrNote {
+      font-size: 11px;
+      color: #666;
+      margin-top: 4px;
+      text-align: center
+    }
+
+    #yrNoteRes {
+      font-size: 11px;
+      color: #666;
+      margin-top: 4px;
+      text-align: center
+    }
+
+    .toggle {
+      margin: 24px 0 16px;
+      display: flex;
+      align-items: center;
+      gap: 4px
+    }
+
+    input[type=checkbox] {
+      width: auto;
+      margin-right: 8px
+    }
+
+    .cards {
+      display: -ms-grid;
+      display: grid;
+      -ms-grid-columns: 1fr 16px 1fr 16px 1fr 16px 1fr 16px 1fr 16px 1fr;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 16px;
+      margin: 20px 0
+    }
+
+    .summary-card {
+      flex: 1 1 150px;
+      padding: 14px 18px;
+      background: #f0f3f5;
+      border-radius: 10px;
+      text-align: center
+    }
+
+    .summary-card h3 {
+      margin: 0;
+      font-size: 14px;
+      font-weight: 600;
+      color: #555
+    }
+
+    .summary-card p {
+      margin: 6px 0 0;
+      font-size: 18px;
+      font-weight: 700
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      font-size: 13px
+    }
+
+    th,
+    td {
+      padding: 4px 6px;
+      text-align: right;
+      border: 1px solid #e1e4e8
+    }
+
+    th {
+      background: #f0f3f5;
+      font-weight: 700
+    }
+
+    th.small {
+      width: 45px
+    }
+
+    td:first-child,
+    th:first-child {
+      text-align: left
+    }
+
+    .wrap {
+      white-space: normal
+    }
+
+    .tax13 td {
+      background: #fff
+    }
+
+    .tax15 td {
+      background: #d4f4d4
+    }
+
+    .tax18 td {
+      background: #fff8b4
+    }
+
+    .tax20 td {
+      background: #d2ecff
+    }
+
+    .tax22 td {
+      background: #eadaff
+    }
+
+    .note {
+      font-size: 12px;
+      color: #666;
+      margin-top: 6px
+    }
+
+    summary {
+      cursor: pointer;
+      font-weight: 600
+    }
+
+    /* Список отпусков */
+    .vacation-block { 
+      display: flex;
+      flex-direction: column;
+      margin: 16px 0;
+      width: 100%;
+    }
+
+    #vacList {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 8px 0;
+      max-width: 300px;
+    }
+
+    #vacList li {
+      background: #f0f3f5;
+      border-radius: 6px;
+      padding: 6px 10px;
+      margin-bottom: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+    }
+
+    #vacList .actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    #vacList button {
+      border: none;
+      background: none;
+      cursor: pointer;
+      padding: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #vacList .delete-btn {
+      color: #d33;
+      font-size: 14px;
+    }
+
+    #vacList .edit-btn {
+      color: #666;
+      font-size: 14px;
+    }
+
+    #vacList .edit-btn:hover {
+      color: #2680eb;
+    }
+
+    /* Центрирование календаря */
+    .flatpickr-calendar {
+      position: fixed !important;
+      top: 50% !important;
+      left: 50% !important;
+      transform: translate(-50%, -50%) !important;
+    }
+
+    /* Стили для праздничных дней */
+    .holiday,
+    .flatpickr-day.weekend {
+      color: #ff0000 !important;
+    }
+
+    .flatpickr-day.holiday:hover,
+    .flatpickr-day.weekend:hover {
+      background: #ffe6e6;
+    }
+
+    .flatpickr-day.selected.holiday,
+    .flatpickr-day.selected.weekend {
+      background: #2680eb;
+      color: white !important;
+    }
+
+    /* Стили для существующих отпусков */
+    .flatpickr-day.existing-vacation { 
+      background: #e6ffe6 !important;
+      border-color: #b3ffb3 !important;
+    }
+
+    .flatpickr-day.existing-vacation:hover {
+      background: #ccffcc !important;
+    }
+
+    /* Стили для начала и конца периода отпуска */
+    .flatpickr-day.existing-vacation.vacation-start:not(.weekend):not(.holiday),
+    .flatpickr-day.existing-vacation.vacation-end:not(.weekend):not(.holiday) {
+      color: #000 !important;
+    }
+
+    /* Сохраняем красный цвет для выходных и праздников */
+    .flatpickr-day.existing-vacation.vacation-start.weekend,
+    .flatpickr-day.existing-vacation.vacation-end.weekend,
+    .flatpickr-day.existing-vacation.vacation-start.holiday,
+    .flatpickr-day.existing-vacation.vacation-end.holiday {
+      color: #ff0000 !important;
+    }
+
+    /* Стили для кнопки добавления отпуска */
+    #addVacation {
+      padding: 8px 20px;
+      border: none;
+      border-radius: 8px;
+      background: #2067D9;
+      color: #fff;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s ease;
+      width: fit-content;
+      align-self: flex-start;
+    }
+
+    #addVacation:hover {
+      background: #1756bc;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(32, 103, 217, 0.2);
+    }
+
+    .info-text {
+      font-size: 12px;
+      color: #666;
+      margin: 8px 0 16px;
+      line-height: 1.4;
+    }
+
+    .info-text p {
+      margin: 4px 0;
+    }
+
+    /* Для спорной годовой оценки */
+    .year-grade-cell {
+      position: relative;
+      width: 100%;
+      min-width: 0;
+    }
+
+    .year-grade-cell.active,
+    .year-grade-cell.inactive {
+      display: flex;
+      align-items: center;
+      min-height: unset;
+      height: 43px;
+      border-radius: 8px;
+      padding: 0;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .year-grade-cell.active {
+      background: #fff;
+      border: 1px solid #cfd2d4;
+    }
+
+    .year-grade-cell.inactive {
+      background: #e9ecef;
+      border: 1px solid #cfd2d4;
+    }
+
+    .year-grade-cell select.year-grade-select {
+      border: none;
+      background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23666' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 14px center/10px 6px;
+      font-size: 15px;
+      font-weight: 400;
+      width: 100%;
+      outline: none;
+      appearance: none;
+      padding: 12px 38px 12px 16px;
+      cursor: pointer;
+      border-radius: 8px;
+      height: 43px;
+      box-sizing: border-box;
+    }
+
+    .year-grade-cell input[readonly] {
+      border: none;
+      background: transparent;
+      font-size: 15px;
+      font-weight: 400;
+      width: 100%;
+      padding: 12px 16px;
+      color: #222;
+      text-align: left;
+      height: 43px;
+      border-radius: 8px;
+      box-sizing: border-box;
+    }
+
+    /* Выделение строки Итого */
+    #totalsRow {
+      background: #eef5ed;
+      border-top: 2px solid #e1e4e8;
+      height: 44px;
+    }
+
+    #totalsRow td {
+      white-space: nowrap;
+      font-weight: 400;
+      font-size: 13px;
+    }
+
+    #totalsRow td:first-child {
+      font-weight: 700;
+    }
+
+    #startDateWrap input {
+      vertical-align: middle;
+      height: 38px;
+      font-size: 16px;
+      padding-top: 0;
+      padding-bottom: 0;
+      margin-top: 0;
+      margin-bottom: 0;
+      box-sizing: border-box;
+    }
+
+    /* Анимация подсветки суммы */
+    @keyframes highlightFade {
+      from { background-color: #fff8b4; }
+      to { background-color: transparent; }
+    }
+    .highlight-update {
+      animation: highlightFade 0.5s ease-out;
+    }
+
+    /* Стили для всплывающей подсказки */
+    .info-tooltip-container {
+        position: relative;
+        display: inline-block;
+        margin-left: 5px; /* Небольшой отступ от суммы */
+        cursor: pointer;
+        vertical-align: middle;
+    }
+
+    .info-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        border: 1px solid #2067D9;
+        color: #2067D9;
+        font-size: 12px; /* Немного уменьшим размер шрифта, чтобы уместился */
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        vertical-align: 4px; /* Приподнять иконку */
+    }
+
+    .info-icon:hover {
+        background-color: #2067D9;
+        color: #fff;
+    }
+
+    .tooltip-text {
+        visibility: hidden;
+        opacity: 0;
+        width: 250px; /* Ограничиваем ширину подсказки */
+        background-color: #555;
+        color: #fff;
+        text-align: center;
+        border-radius: 6px;
+        padding: 10px;
+        position: absolute;
+        z-index: 1;
+        bottom: 125%; /* Располагаем над иконкой */
+        left: 50%;
+        transform: translateX(-50%); /* Центрируем подсказку по ее собственной ширине */
+        opacity: 0;
+        transition: opacity 0.3s;
+        font-size: 12px;
+        line-height: 1.4;
+        max-width: 280px; /* Максимальная ширина перед переносом текста */
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+
+    /* Стрелка подсказки */
+    .tooltip-text::after {
+        content: "";
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        margin-left: -5px;
+        border-width: 5px;
+        border-style: solid;
+        border-color: #2067D9 transparent transparent transparent;
+    }
+
+    /* Показать подсказку при наведении на контейнер */
+    .info-tooltip-container:hover .tooltip-text {
+        visibility: visible;
+        opacity: 1;
+    }
+  </style>
+</head>
+
+<body>
+<div class="card">
+<h1>Калькулятор дохода (2026)</h1>
+<div class="row" style="margin-bottom:12px;">
+      <div class="col"><label>Целевой совокупный доход в месяц*<br><span class="note"
+            style="font-size:12px;color:#666;vertical-align:middle;">(₽, средний в год до вычета
+            НДФЛ)</span></label><input id="monthlyTargetInput" type="text" placeholder="100 000"></div>
+      <div class="col"><label>Целевой совокупный доход в год*<br><span class="note"
+            style="font-size:12px;color:#666;vertical-align:middle;">(₽, до вычета НДФЛ)</span></label><input
+          id="targetInput" type="text" placeholder="1 200 000"></div>
+      <div class="col"><label>Категория распределения дохода* <span class="note"
+            style="font-size:12px;color:#666;vertical-align:middle;"> <br>(Базовая часть / Кв. премия / Год.
+            премия)</span></label>
+    <select id="distribution">
+          <option value="100/0/0">100/0/0</option>
+          <option value="90/10/0">90/10/0</option>
+          <option value="90/0/10">90/0/10</option>
+          <option value="80/10/10">80/10/10</option>
+          <option value="70/20/10">70/20/10</option>
+          <option value="60/20/20">60/20/20</option>
+          <option value="50/20/30">50/20/30</option>
+    </select>
+  </div>
+</div>
+    <div class="note" style="font-size:12px;color:#666;margin: 2px 0 12px 0; text-align:left;">*Уточняйте у своего
+      руководителя</div>
+<!-- Оценки -->
+    <h2 style="margin: 24px 0 16px 0; font-size: 22px; font-weight: 700;">Целевое распределение дохода с учетом
+      квартальных оценок </h2>
+<div class="grades-row">
+      <template id="opt">
+        <option value="1.3">A (1.3)</option>
+        <option value="1.15">B (1.15)</option>
+        <option value="1" selected>C (1)</option>
+        <option value="0.75">D (0.75)</option>
+        <option value="0">E (0)</option>
+      </template>
+       <div class="col" style="margin-bottom:8px;font-size:15px;font-weight:600; align-self: end;">Оценка корпоративных компетенций</div>
+  <div class="col"><label>I кв.</label><select class="grade" id="g1"></select></div>
+  <div class="col"><label>II кв.</label><select class="grade" id="g2"></select></div>
+  <div class="col"><label>III кв.</label><select class="grade" id="g3"></select></div>
+  <div class="col"><label>IV кв.</label><select class="grade" id="g4"></select></div>
+      <div class="col" style="align-self:flex-end;"><label>Годовая оценка</label>
+        <div id="yearGradeCell" class="year-grade-cell inactive"><input id="yearGrade" readonly></div>
+        <div id="yrNote" class="note"></div>
+</div>
+    </div>
+    <div class="toggle"><input type="checkbox" id="addResultGrades"><label for="addResultGrades">Добавить оценку
+        результативности</label></div>
+    <div id="resultGradesBlock" style="display:none; margin-bottom: 12px;">
+          <div class="grades-row">
+          <div class="col" style="margin-bottom:8px;font-size:15px;font-weight:600; align-self: end;">Оценки результативности</div>
+        <div class="col"><label>I кв.</label><select class="grade-res" id="r1"></select></div>
+        <div class="col"><label>II кв.</label><select class="grade-res" id="r2"></select></div>
+        <div class="col"><label>III кв.</label><select class="grade-res" id="r3"></select></div>
+        <div class="col"><label>IV кв.</label><select class="grade-res" id="r4"></select></div>
+        <div class="col" style="align-self:flex-end;"><label>Годовая оценка</label>
+          <div id="yearGradeResCell" class="year-grade-cell inactive"><input id="yearGradeRes" readonly></div>
+          <div id="yrNoteRes" class="note"></div>
+        </div>
+      </div>
+    </div>
+<div class="cards" id="cards"></div>
+    <div style="font-size:19px;font-weight:600;">Итого за год (до вычета НДФЛ) <span id="totVal">0 ₽</span><span
+        id="star" style="display:none"></span>
+        <span class="info-tooltip-container">
+            <span class="info-icon">i</span>
+            <span class="tooltip-text">Совокупный доход = Базовая часть*12 + Квартальная премия × 4 + Годовая премия</span>
+        </span>
+    </div>
+<p class="note" id="taxInfo"></p>
+        <p class="note" id="calcNote"></p>
+  <details style="margin-top: 44px;">
+    <summary style="font-size: 22px;">Детализированный расчёт
+        <span class="info-tooltip-container">
+            <span class="info-icon">i</span>
+            <span class="tooltip-text">с учётом праздников, отпусков и дополнительных выплат</span>
+        </span>
+    </summary>
+      <div style="margin-top: 12px; margin-bottom: 12px; display: flex; align-items: center; gap: 10px; padding-top: 10px; padding-bottom: 10px;">
+    <input type="checkbox" id="isNewEmployee">
+    <label for="isNewEmployee" id="labelNewEmployee">Принят на работу в 2026 году</label>
+    <div id="startDateWrap" style="display:none; margin-left:12px; display:flex; align-items:center;">
+      <input id="startDate" type="text" placeholder="дд.мм.гггг" style="width:140px;">
+      <span id="calculationPeriodMsg" style="font-size:13px; color:#555; margin-left:12px; display:none;"></span>
+    </div>
+  </div>
+  <div class="info-text">
+    <p>НДФЛ: при превышении порога строка месяца меняет цвет (13 → 15 → 18 → 20 → 22 %).</p>
+                <p><strong style="color: #d33;">Внимание!</strong> Расчёт отпускных ведётся по выбранному совокупному доходу и не учитывает фактический средний заработок за прошлый период. <br>Все расчеты носят только
+          ознакомительный характер.</p>
+  </div>
+  <div class="vacation-block" style="margin: 0 0 16px 0;">
+    <ul id="vacList"></ul>
+  </div>
+  
+  <button id="addVacation" style="margin-bottom: 16px;">+ Добавить оплач. отпуск</button>
+
+  <div class="table-wrap">
+        <table id="tbl">
+          <thead>
+            <tr>
+              <th>Месяц</th>
+              <th class="small">Норма дней<br><span class="note">раб. дн.</span></th>
+              <th class="wrap">Оплач.<br>отпуск<br><span class="note">раб. дн.</span></th>
+              <th class="wrap">Неопл.<br>отпуск<br><span class="note">раб. дн.</span></th>
+              <th class="wrap">Стоимость<br>дня, ₽</th>
+              <th>Базовая часть, ₽</th>
+              <th class="wrap">Квартальная<br>премия, ₽</th>
+              <th class="wrap">Годовая<br>премия, ₽</th>
+              <th class="wrap">Доп. планируемые выплаты, ₽</th>
+              <th class="wrap">Итого<br>(до вычета НДФЛ), ₽</th>
+              <th>НДФЛ, ₽</th>
+              <th class="wrap">Итого<br>(после вычета НДФЛ), ₽</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+          <tfoot>
+            <tr id="totalsRow">
+              <td style="font-weight:700">Итого</td>
+              <td id="sumNorm"></td>
+              <td id="sumPaid"></td>
+              <td id="sumUnpaid"></td>
+              <td></td>
+              <td id="sumBase"></td>
+              <td id="sumQ"></td>
+              <td id="sumY"></td>
+              <td id="sumExtra"></td>
+              <td id="sumGross"></td>
+              <td id="sumTax"></td>
+              <td id="sumNet"></td>
+            </tr>
+          </tfoot>
+        </table>
+  </div>
+</details>
+</div>
+<script>
+  /* ---------- Данные праздников 2026 ---------- */
+  const holidays2026 = [
+    // Январь - Новогодние каникулы (1-9 января)
+    '2026-01-01', '2026-01-02', '2026-01-03', '2026-01-04', 
+    '2026-01-05', '2026-01-06', '2026-01-07', '2026-01-08', '2026-01-09',
+    // Февраль
+    '2026-02-23', // День защитника Отечества
+    // Март
+    '2026-03-08', // Международный женский день
+    // Май
+    '2026-05-01', // Праздник Весны и Труда
+    '2026-05-09', // День Победы
+    // Июнь
+    '2026-06-12', // День России
+    // Ноябрь
+    '2026-11-04' // День народного единства
+  ];
+
+  /* ---------- Элементы ---------- */
+    const targetInput = document.getElementById('targetInput');
+    const monthlyTargetInput = document.getElementById('monthlyTargetInput');
+    const distribution = document.getElementById('distribution');
+    const yearGrade = document.getElementById('yearGrade');
+    const yrNote = document.getElementById('yrNote');
+    const yearGradeRes = document.getElementById('yearGradeRes');
+    const yrNoteRes = document.getElementById('yrNoteRes');
+    const addResultGrades = document.getElementById('addResultGrades');
+    const resultGradesBlock = document.getElementById('resultGradesBlock');
+    const cards = document.getElementById('cards');
+    const totVal = document.getElementById('totVal');
+    const taxInfo = document.getElementById('taxInfo');
+    const fact = document.getElementById('fact');
+    const addVacationBtn = document.getElementById('addVacation');
+    const vacList = document.getElementById('vacList');
+
+  /* ---------- Константы расчёта ---------- */
+    const months = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
+    const norms = [15, 19, 21, 22, 19, 21, 23, 21, 22, 22, 20, 22];
+    const steps = [{ lim: 2400000, rate: 13, cls: 'tax13', info: 'К сумме будет применяться НДФЛ 13 % до 2,4 млн' }, { lim: 5000000, rate: 15, cls: 'tax15', info: 'К сумме будет применяться НДФЛ 13 % до 2,4 млн, 15 % до 5 млн' }, { lim: 20000000, rate: 18, cls: 'tax18', info: 'К сумме будет применяться НДФЛ 13 % до 2,4 млн, 15 % до 5 млн, 18 % до 20 млн' }, { lim: 50000000, rate: 20, cls: 'tax20', info: 'К сумме будет применяться НДФЛ 13 % до 2,4 млн, 15 % до 5 млн, 18 % до 20 млн, 20 % до 50 млн' }, { lim: Infinity, rate: 22, cls: 'tax22', info: 'К сумме будет применяться НДФЛ 13 % до 2,4 млн, 15 % до 5 млн, 18 % до 20 млн, 20 % до 50 млн, 22 % свыше 50 млн' }];
+    const coeffMap = { 1.3: 'A', 1.15: 'B', 1: 'C', 0.75: 'D', 0: 'E' };
+
+  /* ---------- Строим таблицу ---------- */
+    const tbody = document.querySelector('#tbl tbody');
+    const paid = [], unpaid = [], extra = [], totGrossArr = [], totNetArr = [];
+    months.forEach((m, i) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${m}</td><td>${norms[i]}</td><td class='pCell'></td><td><input type='number' class='u' min='0' max='${norms[i]}' value='0'></td><td class='d'></td><td class='b'></td><td class='q'></td><td class='y'></td><td><input type='text' class='x' value='0'></td><td class='totGross'></td><td class='t'></td><td class='totNet'></td>`;
+    tbody.appendChild(tr);
+      paid.push(tr.querySelector('.pCell'));
+    unpaid.push(tr.querySelector('.u'));
+    extra.push(tr.querySelector('.x'));
+      totGrossArr.push(tr.querySelector('.totGross'));
+      totNetArr.push(tr.querySelector('.totNet'));
+  });
+
+  /* ---------- Оценки ---------- */
+    const gradeEls = [g1, g2, g3, g4];
+    gradeEls.forEach(sel => { sel.appendChild(document.getElementById('opt').content.cloneNode(true)); });
+    // Оценки результативности
+    const gradeResEls = [r1, r2, r3, r4];
+    gradeResEls.forEach(sel => { sel.appendChild(document.getElementById('opt').content.cloneNode(true)); });
+
+  /* ---------- Хранилище отпусков ---------- */
+    let vacations = []; // элементы {from:Date,to:Date}
+
+    function dateISO(d) { return d.toISOString().split('T')[0]; }
+    function* eachDay(from, to) { for (let d = new Date(from); d <= to; d.setDate(d.getDate() + 1))yield new Date(d); }
+
+  // Пересчёт оплачиваемых отпусков по месяцам
+    function updateVacations() {
+    // нулируем значения для рабочих дней и общих дней отпуска
+    const monthWorkDays = new Array(12).fill(0);
+    const monthTotalDays = new Array(12).fill(0);
+    // Сортируем отпуска перед обработкой
+    vacations.sort((a, b) => a.from.getTime() - b.from.getTime());
+    
+      vacations.forEach(({ from, to, totalDays }) => {
+        // Для отпускных учитываем все календарные дни отпуска в месяце начала отпуска
+        const startMonth = from.getMonth();
+        monthTotalDays[startMonth] = totalDays;
+        
+        for (const d of eachDay(new Date(from), new Date(to))) {
+        // Проверяем, является ли день рабочим (пн-пт, не праздник)
+        if (!isHoliday(d) && !isWeekend(d)) {
+          monthWorkDays[d.getMonth()]++;
+        }
+      }
+    });
+    
+    monthWorkDays.forEach((cnt, i) => {
+      paid[i].textContent = Math.round(cnt);
+    });
+    
+    // Сохраняем общее количество дней отпуска для каждого месяца в data-атрибуте
+    monthTotalDays.forEach((cnt, i) => {
+      paid[i].setAttribute('data-total-days', Math.round(cnt));
+    });
+    
+    recalc();
+  }
+
+  // Добавление/удаление периодов
+    const fpInput = document.createElement('input');
+    addVacationBtn.addEventListener('click', () => {
+      const fp = flatpickr(fpInput, {
+        locale: 'ru',
+        mode: 'range',
+        dateFormat: 'd.m.Y',
+      // Добавляем опцию для отключения очистки выбора
+      allowInput: false,
+      clickOpens: true,
+        onDayCreate: function (dObj, dStr, fp, dayElem) {
+        const date = dayElem.dateObj;
+        // Проверяем, входит ли дата в существующие периоды отпусков
+        const currentDate = date.getTime();
+        vacations.forEach(v => {
+          if (currentDate >= v.from.getTime() && currentDate <= v.to.getTime()) {
+            dayElem.classList.add('existing-vacation');
+            // Добавляем классы для начала и конца периода
+            if (currentDate === v.from.getTime()) {
+              dayElem.classList.add('vacation-start');
+            }
+            if (currentDate === v.to.getTime()) {
+              dayElem.classList.add('vacation-end');
+            }
+          }
+        });
+        
+        if (isHoliday(date)) {
+          dayElem.classList.add('holiday');
+        }
+        if (isWeekend(date) && !isHoliday(date)) {
+          dayElem.classList.add('weekend');
+        }
+      },
+        onChange: function (selectedDates) {
+        if (selectedDates.length === 2) {
+          let workDays = 0;
+          let totalDays = 0;
+          for (const d of eachDay(selectedDates[0], selectedDates[1])) {
+            totalDays++;
+            if (!isHoliday(d) && !isWeekend(d)) {
+              workDays++;
+            }
+          }
+          fpInput._fp.altInput.placeholder = `Выберите период (всего ${totalDays} дн., из них ${workDays} раб. дн.)`;
+        }
+      },
+        onClose: (selDates) => {
+          if (selDates.length === 2) {
+            const [from, to] = selDates;
+          // Проверяем пересечение с существующими отпусками
+          const hasOverlap = vacations.some(v => {
+            const newStart = from.getTime();
+            const newEnd = to.getTime();
+            const existingStart = v.from.getTime();
+            const existingEnd = v.to.getTime();
+            return (newStart <= existingEnd && newEnd >= existingStart);
+          });
+
+          if (hasOverlap) {
+            alert('Выбранный период пересекается с уже существующим отпуском. Пожалуйста, выберите другой период.');
+            return;
+          }
+
+          let workDays = 0;
+          let totalDays = 0;
+          for (const d of eachDay(from, to)) {
+            totalDays++;
+            if (!isHoliday(d) && !isWeekend(d)) {
+              workDays++;
+            }
+          }
+            vacations.push({ from, to, days: workDays, totalDays: totalDays });
+          renderVacations();
+          updateVacations();
+          
+          // Обновляем отображение календаря после добавления нового периода
+          fp.redraw();
+        }
+      }
+    });
+    
+    // Открываем календарь
+    fp.open();
+    
+    // Принудительно обновляем отображение после открытия
+    setTimeout(() => fp.redraw(), 0);
+  });
+    function renderVacations() {
+    // Сортируем отпуска по дате начала
+    vacations.sort((a, b) => a.from.getTime() - b.from.getTime());
+    
+      vacList.innerHTML = '';
+      vacations.forEach((v, idx) => {
+        const li = document.createElement('li');
+        li.innerHTML = `
+        <span>${v.from.toLocaleDateString()} – ${v.to.toLocaleDateString()} (всего ${v.totalDays} дн., из них ${v.days} раб. дн.)</span>
+        <div class="actions">
+          <button class="edit-btn" title="Редактировать период">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
+            </svg>
+          </button>
+          <button class="delete-btn" title="Удалить период">&times;</button>
+        </div>`;
+
+      // Обработчик удаления
+        li.querySelector('.delete-btn').onclick = () => {
+          vacations.splice(idx, 1);
+        renderVacations();
+        updateVacations();
+      };
+
+      // Обработчик редактирования
+        li.querySelector('.edit-btn').onclick = () => {
+          const fp = flatpickr(fpInput, {
+            locale: 'ru',
+            mode: 'range',
+            dateFormat: 'd.m.Y',
+          defaultDate: [v.from, v.to],
+          allowInput: false,
+          clickOpens: true,
+            onDayCreate: function (dObj, dStr, fp, dayElem) {
+            const date = dayElem.dateObj;
+            const currentDate = date.getTime();
+            // Показываем все периоды отпусков, кроме редактируемого
+            vacations.forEach((vacation, index) => {
+              if (index !== idx && 
+                  currentDate >= vacation.from.getTime() && 
+                  currentDate <= vacation.to.getTime()) {
+                dayElem.classList.add('existing-vacation');
+                if (currentDate === vacation.from.getTime()) {
+                  dayElem.classList.add('vacation-start');
+                }
+                if (currentDate === vacation.to.getTime()) {
+                  dayElem.classList.add('vacation-end');
+                }
+              }
+            });
+            
+            if (isHoliday(date)) {
+              dayElem.classList.add('holiday');
+            }
+            if (isWeekend(date) && !isHoliday(date)) {
+              dayElem.classList.add('weekend');
+            }
+          },
+            onChange: function (selectedDates) {
+            if (selectedDates.length === 2) {
+              let workDays = 0;
+              let totalDays = 0;
+              for (const d of eachDay(selectedDates[0], selectedDates[1])) {
+                totalDays++;
+                if (!isHoliday(d) && !isWeekend(d)) {
+                  workDays++;
+                }
+              }
+              fpInput._fp.altInput.placeholder = `Выберите период (всего ${totalDays} дн., из них ${workDays} раб. дн.)`;
+            }
+          },
+            onClose: (selDates) => {
+              if (selDates.length === 2) {
+                const [from, to] = selDates;
+              // Проверяем пересечение с существующими отпусками, исключая текущий период
+              const hasOverlap = vacations.some((v, i) => {
+                if (i === idx) return false;
+                const newStart = from.getTime();
+                const newEnd = to.getTime();
+                const existingStart = v.from.getTime();
+                const existingEnd = v.to.getTime();
+                return (newStart <= existingEnd && newEnd >= existingStart);
+              });
+
+              if (hasOverlap) {
+                alert('Выбранный период пересекается с уже существующим отпуском. Пожалуйста, выберите другой период.');
+                return;
+              }
+
+              let workDays = 0;
+              let totalDays = 0;
+              for (const d of eachDay(from, to)) {
+                totalDays++;
+                if (!isHoliday(d) && !isWeekend(d)) {
+                  workDays++;
+                }
+              }
+              // Обновляем существующий период
+                vacations[idx] = { from, to, days: workDays, totalDays: totalDays };
+              renderVacations();
+              updateVacations();
+            }
+            fp.destroy();
+          }
+        });
+        
+        fp.open();
+        setTimeout(() => fp.redraw(), 0);
+      };
+
+      vacList.appendChild(li);
+    });
+  }
+
+    /* ---------- Форматирование чисел ---------- */
+    function formatNumber(number) {
+      return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+    }
+
+    function parseFormattedNumber(str) {
+      return parseInt(str.replace(/\s/g, '')) || 0;
+    }
+
+    function syncInputs(sourceInput, targetInput, multiplier) {
+      const value = parseFormattedNumber(sourceInput.value);
+      targetInput.value = formatNumber(Math.round(value * multiplier));
+    }
+
+    targetInput.addEventListener('input', function (e) {
+      // Форматируем ввод
+      const value = parseFormattedNumber(e.target.value);
+      e.target.value = formatNumber(value);
+      // Синхронизируем с месячным доходом
+      syncInputs(targetInput, monthlyTargetInput, 1 / 12);
+      recalc();
+    });
+
+    monthlyTargetInput.addEventListener('input', function (e) {
+      // Форматируем ввод
+      const value = parseFormattedNumber(e.target.value);
+      e.target.value = formatNumber(value);
+      // Синхронизируем с годовым доходом
+      syncInputs(monthlyTargetInput, targetInput, 12);
+      recalc();
+    });
+
+    /* ---------- Новый расчет годовой оценки по МР с учетом балльной шкалы ---------- */
+    const gradeMap = { 'A': 5, 'B': 4, 'C': 3, 'D': 2, 'E': 1 };
+    const gradeLettersByValue = { 5: 'A', 4: 'B', 3: 'C', 2: 'D', 1: 'E' };
+    const coeffByLetter = { 'A': 1.3, 'B': 1.15, 'C': 1, 'D': 0.75, 'E': 0 };
+    const letterByCoeff = { 1.3: 'A', 1.15: 'B', 1: 'C', 0.75: 'D', 0: 'E' };
+
+    function coeffToBall(coeff) {
+      // 1.3->5, 1.15->4, 1->3, 0.75->2, 0->1
+      if (coeff >= 1.25) return 5;
+      if (coeff >= 1.07) return 4;
+      if (coeff >= 0.87) return 3;
+      if (coeff >= 0.37) return 2;
+      return 1;
+    }
+    function ballToCoeff(ball) {
+      return coeffByLetter[gradeLettersByValue[ball]];
+    }
+
+    function getGradeByBall(avg) {
+      // Возвращает: {letters: ["B"], range: "3,7–4,49"} или {letters: ["B","C"], range: "3,5–3,69"}
+      if (avg >= 4.7) return { letters: ['A'], range: '≥ 4,7' };
+      if (avg >= 4.5) return { letters: ['A', 'B'], range: '4,5–4,69' };
+      if (avg >= 3.7) return { letters: ['B'], range: '3,7–4,49' };
+      if (avg >= 3.5) return { letters: ['B', 'C'], range: '3,5–3,69' };
+      if (avg >= 2.7) return { letters: ['C'], range: '2,7–3,49' };
+      if (avg >= 2.5) return { letters: ['C', 'D'], range: '2,5–2,69' };
+      if (avg >= 1.7) return { letters: ['D'], range: '1,7–2,49' };
+      if (avg >= 1.5) return { letters: ['D', 'E'], range: '1,5–1,69' };
+      return { letters: ['E'], range: '< 1,5' };
+    }
+
+    function renderYearGradeBlock(avg, el, selectId, cellId) {
+      // avg — средний балл, el — input для вывода, selectId — id для селекта, cellId — id контейнера
+      const cell = document.getElementById(cellId);
+      const grade = getGradeByBall(avg);
+      // Проверяем, есть ли уже селектор с теми же опциями
+      let oldSel = cell.querySelector('select.year-grade-select');
+      if (grade.letters.length === 1) {
+        cell.className = 'year-grade-cell inactive';
+        // Если уже есть input с нужным значением, не пересоздаём
+        let oldInput = cell.querySelector('input[readonly]');
+        if (oldInput && oldInput.value === grade.letters[0]) return coeffByLetter[grade.letters[0]];
+        cell.innerHTML = '';
+        const inp = document.createElement('input');
+        inp.id = el.id;
+        inp.readOnly = true;
+        inp.value = grade.letters[0];
+        cell.appendChild(inp);
+        if (cell.parentElement.querySelector('.note')) cell.parentElement.querySelector('.note').textContent = '';
+        return coeffByLetter[grade.letters[0]];
+      } else {
+        cell.className = 'year-grade-cell active';
+        // Проверяем, совпадает ли набор опций
+        let needUpdate = true;
+        if (oldSel) {
+          const opts = Array.from(oldSel.options).map(o => o.textContent);
+          if (opts.length === grade.letters.length && opts.every((o, i) => o === grade.letters[i])) {
+            needUpdate = false;
+          }
+        }
+        if (!oldSel || needUpdate) {
+          cell.innerHTML = '';
+          const sel = document.createElement('select');
+          sel.className = 'year-grade-select';
+          sel.id = selectId;
+          grade.letters.forEach(letter => {
+            const opt = document.createElement('option');
+            opt.value = coeffByLetter[letter];
+            opt.textContent = letter;
+            sel.appendChild(opt);
+          });
+          cell.appendChild(sel);
+          if (cell.parentElement.querySelector('.note')) cell.parentElement.querySelector('.note').textContent = 'По решению руководителя';
+          return parseFloat(sel.value);
+        } else {
+          // Уже есть селектор с нужными опциями, просто возвращаем выбранное значение
+          if (cell.parentElement.querySelector('.note')) cell.parentElement.querySelector('.note').textContent = 'По решению руководителя';
+          return parseFloat(oldSel.value);
+  }
+      }
+    }
+
+    function calcYearCoef() {
+      // Считаем средний балл
+      const vals = gradeEls.map(el => coeffToBall(parseFloat(el.value)));
+      const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
+      return renderYearGradeBlock(avg, yearGrade, 'yearGradeSelect', 'yearGradeCell');
+    }
+    function calcYearCoefRes() {
+      const vals = gradeResEls.map(el => coeffToBall(parseFloat(el.value)));
+      const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
+      return renderYearGradeBlock(avg, yearGradeRes, 'yearGradeResSelect', 'yearGradeResCell');
+    }
+
+    // --- Обработка выбора из выпадающего списка итоговой оценки ---
+    document.addEventListener('change', function (e) {
+      if (e.target.classList.contains('year-grade-select')) {
+        recalc();
+      }
+    });
+
+    function getDist() { return distribution.value.split('/').map(Number); }
+    function recalc() {
+      const target = parseFormattedNumber(targetInput.value) || parseFormattedNumber(targetInput.placeholder) || 0;
+    const [bp, qp, yp] = distribution.value.split('/').map(Number);
+
+    const baseYear = target * bp / 100;
+    const baseM = baseYear / 12;
+    const quarterPlan = target * qp / 100 / 4;
+    const yearPlan = target * yp / 100;
+      // --- Получаем коэффициенты ---
+      let yCoef = calcYearCoef();
+      // Если есть селект, берем выбранное значение
+      const selYear = document.getElementById('yearGradeSelect');
+      if (selYear) yCoef = parseFloat(selYear.value);
+      let yCoefRes = 1;
+      let kInt = yCoef;
+      if (addResultGrades.checked) {
+        yCoefRes = calcYearCoefRes();
+        const selRes = document.getElementById('yearGradeResSelect');
+        if (selRes) yCoefRes = parseFloat(selRes.value);
+        kInt = (yCoef + yCoefRes) / 2;
+      }
+
+    // Расчет средней стоимости дня для отпускных
+    const totalWorkDays = norms.reduce((a, b) => a + b, 0); // Общее количество рабочих дней в году
+    const avgDayRate = target / totalWorkDays; // Средняя стоимость дня для отпускных
+
+      cards.innerHTML = '';
+
+    // вспомогательная функция отрисовки карточки
+    const makeCard = (title, amt) => {
+      const d = document.createElement('div');
+      d.className = 'summary-card';
+      d.innerHTML = `<h3>${title}</h3><p>${Math.round(amt).toLocaleString('ru-RU')} ₽</p>`;
+      cards.appendChild(d);
+    };
+
+      // Функция форматирования коэффициента
+      const formatCoeff = (coeff) => {
+        // Показываем 3 знака после запятой, но убираем лишние нули в конце
+        const formatted = coeff.toFixed(3);
+        return formatted.replace(/\.?0+$/, '');
+    };
+
+    let cumulativeGross = 0;
+
+    // Базовая
+      makeCard('Базовая часть / мес.', baseM);
+
+    // Квартальные
+      for (let q = 0; q < 4; q++) {
+        const coefComp = parseFloat(gradeEls[q].value);
+        let coefFinal = coefComp;
+        if (addResultGrades.checked) {
+          const coefRes = parseFloat(gradeResEls[q].value);
+          coefFinal = (coefComp + coefRes) / 2;
+        }
+        const grossQ = quarterPlan * coefFinal;
+      cumulativeGross += grossQ;
+      const stepQ = steps.find(s => cumulativeGross <= s.lim);
+        const netQ = grossQ * (1 - stepQ.rate / 100);
+        const title = addResultGrades.checked ?
+          `${['I', 'II', 'III', 'IV'][q]} кв. <br> премия (${formatCoeff(coefFinal)})` :
+          `${['I', 'II', 'III', 'IV'][q]} кв. <br> премия`;
+        makeCard(title, grossQ);
+    }
+
+    // Годовая
+      let grossY = yearPlan * kInt;
+    cumulativeGross += grossY;
+    const stepY = steps.find(s => cumulativeGross <= s.lim);
+      const netY = grossY * (1 - stepY.rate / 100);
+      const yearTitle = addResultGrades.checked ?
+        `Годовая <br> премия (${formatCoeff(kInt)})` :
+        `Годовая <br> премия`;
+      makeCard(yearTitle, grossY);
+
+    // Таблица и итог
+      let cumGross = 0, cumNet = 0;
+      months.forEach((m, i) => {
+      const row = tbody.rows[i];
+        row.className = '';
+        const u = +unpaid[i].value || 0;
+        const x = parseFormattedNumber(extra[i].value) || 0;
+      const vacDays = parseInt(paid[i].textContent) || 0;
+        // --- Новый сотрудник: расчеты только с даты устройства ---
+        let monthStart = new Date(2026, i, 1);
+        let monthEnd = new Date(2026, i + 1, 0);
+        let isActive = true;
+        let daysInMonth = norms[i];
+        let activeDays = daysInMonth;
+        if (startDate) {
+          if (monthEnd < startDate) {
+            // Месяц до даты устройства — все выплаты 0
+            isActive = false;
+            activeDays = 0;
+          } else if (monthStart < startDate && monthEnd >= startDate) {
+            // Первый месяц работы — считаем только с даты устройства
+            activeDays = 0;
+            for (let d = new Date(monthStart); d <= monthEnd; d.setDate(d.getDate() + 1)) {
+              if (d >= startDate && !isHoliday(d) && !isWeekend(d)) activeDays++;
+            }
+          }
+        }
+      // Фактическая стоимость рабочего дня в текущем месяце
+      const actualDayRate = baseM / norms[i];
+        // Новый расчет отпускных по ТК РФ
+        const avgVacationDay = target / 12 / 29.3;
+        // Оплата за фактически отработанные дни
+        const workDays = isActive ? (activeDays - vacDays - u) : 0;
+        const workPay = actualDayRate * workDays;
+        // Оплата отпускных по среднему дневному заработку - за все календарные дни отпуска
+        const totalVacationDays = parseInt(paid[i].getAttribute('data-total-days')) || vacDays;
+        const vacationPay = isActive ? avgVacationDay * totalVacationDays : 0;
+        // Базовая часть — только за отработанные дни
+        const baseGross = workPay;
+        // Отпускные — отдельной строкой
+        const vacationGross = vacationPay;
+        const idxMap = [3, 6, 9, 11].indexOf(i);
+        let qPay = 0;
+        if (idxMap >= 0) {
+          // --- Квартальная премия: если сотрудник пришел в квартал, премия пропорциональна отработанным дням квартала ---
+          let qStart = new Date(2026, idxMap * 3, 1);
+          let qEnd = new Date(2026, idxMap * 3 + 3, 0);
+          let qNorm = norms.slice(idxMap * 3, idxMap * 3 + 3).reduce((a, b) => a + b, 0);
+          let qActiveDays = qNorm;
+          if (startDate) {
+            if (qEnd < startDate) {
+              qActiveDays = 0;
+            } else if (qStart < startDate && qEnd >= startDate) {
+              qActiveDays = 0;
+              for (let mi = idxMap * 3; mi < idxMap * 3 + 3; mi++) {
+                let mStart = new Date(2026, mi, 1);
+                let mEnd = new Date(2026, mi + 1, 0);
+                for (let d = new Date(mStart); d <= mEnd; d.setDate(d.getDate() + 1)) {
+                  if (d >= startDate && !isHoliday(d) && !isWeekend(d)) qActiveDays++;
+                }
+              }
+            }
+          }
+          const coefComp = parseFloat(gradeEls[idxMap].value);
+          let coefFinal = coefComp;
+          if (addResultGrades.checked) {
+            const coefRes = parseFloat(gradeResEls[idxMap].value);
+            coefFinal = (coefComp + coefRes) / 2;
+          }
+          const qAbsentPaid = paid.slice(idxMap * 3, idxMap * 3 + 3).reduce((a, td) => a + (parseInt(td.textContent) || 0), 0);
+          const qAbsentUnpaid = unpaid.slice(idxMap * 3, idxMap * 3 + 3).reduce((a, input) => a + (+input.value || 0), 0);
+          const workCoeff = qNorm ? (qActiveDays - qAbsentPaid - qAbsentUnpaid) / qNorm : 0;
+          qPay = quarterPlan * coefFinal * (isActive ? workCoeff : 0);
+      }
+        // --- Годовая премия с учетом только неоплачиваемых отпусков ---
+        let yPay = 0;
+        if (i === 11) {
+          // Считаем коэффициент отработанных дней за год
+          const totalNorm = norms.reduce((a, b) => a + b, 0);
+          let totalActive = totalNorm;
+          if (startDate) {
+            let yearStart = new Date(2026, 0, 1);
+            let yearEnd = new Date(2026, 11, 31);
+            if (yearEnd < startDate) {
+              totalActive = 0;
+            } else if (yearStart < startDate && yearEnd >= startDate) {
+              totalActive = 0;
+              for (let mi = 0; mi < 12; mi++) {
+                let mStart = new Date(2026, mi, 1);
+                let mEnd = new Date(2026, mi + 1, 0);
+                for (let d = new Date(mStart); d <= mEnd; d.setDate(d.getDate() + 1)) {
+                  if (d >= startDate && !isHoliday(d) && !isWeekend(d)) totalActive++;
+                }
+              }
+            }
+          }
+          // Учитываем только неоплачиваемые отпуска, оплачиваемые отпуска НЕ влияют на годовую премию
+          const totalUnpaid = unpaid.reduce((a, input) => a + (+input.value || 0), 0);
+          const yearWorkCoeff = totalNorm ? (totalActive - totalUnpaid) / totalNorm : 0;
+          yPay = grossY * yearWorkCoeff;
+        }
+        // Итоговые начисления: базовая часть + отпускные + премии + доп. выплаты
+        const gross = isActive ? (baseGross + vacationGross + qPay + yPay + x) : 0;
+        // --- Новый расчет НДФЛ по частям ---
+        let tax = 0;
+        let left = gross;
+        let prevCum = cumGross;
+        const limits = [2400000, 5000000, 20000000, 50000000, Infinity];
+        const rates = [13, 15, 18, 20, 22];
+        for (let s = 0; s < limits.length && left > 0; s++) {
+          const lim = limits[s];
+          const rate = rates[s];
+          let available = lim - prevCum;
+          if (available > 0) {
+            let part = Math.min(left, available);
+            tax += part * rate / 100;
+            left -= part;
+            prevCum += part;
+          }
+        }
+      cumGross += gross;
+      const net = gross - tax;
+      cumNet += net;
+        row.classList.add(steps.find(s => cumGross <= s.lim).cls);
+        // Стоимость дня
+        const totalVacationDaysDisplay = parseInt(paid[i].getAttribute('data-total-days')) || vacDays;
+        row.querySelector('.d').textContent = vacDays > 0 ? 
+            `${Math.round(actualDayRate).toLocaleString('ru-RU')} (отп: ${Math.round(avgVacationDay).toLocaleString('ru-RU')} × ${totalVacationDaysDisplay})` :
+          Math.round(actualDayRate).toLocaleString('ru-RU');
+        // Базовая часть
+        row.querySelector('.b').textContent = isActive ? Math.round(baseGross).toLocaleString('ru-RU') : '';
+        // Квартальная премия
+        row.querySelector('.q').textContent = qPay ? Math.round(qPay).toLocaleString('ru-RU') : '';
+        // Годовая премия
+        row.querySelector('.y').textContent = yPay ? Math.round(yPay).toLocaleString('ru-RU') : '';
+        row.querySelector('.totGross').textContent = Math.round(gross).toLocaleString('ru-RU');
+        row.querySelector('.t').textContent = Math.round(tax).toLocaleString('ru-RU');
+        row.querySelector('.totNet').textContent = Math.round(net).toLocaleString('ru-RU');
+      });
+
+      const finalVal = cumGross;
+      // Исключаем отпускные, неоплачиваемые отпуска и дополнительные выплаты из итоговой суммы
+      const totalWithoutExtras = months.reduce((sum, m, i) => {
+        const row = tbody.rows[i];
+        const baseGross = parseFloat(row.querySelector('.b').textContent.replace(/\s/g, '')) || 0;
+        const qPay = parseFloat(row.querySelector('.q').textContent.replace(/\s/g, '')) || 0;
+        const yPay = parseFloat(row.querySelector('.y').textContent.replace(/\s/g, '')) || 0;
+        return sum + baseGross + qPay + yPay;
+      }, 0);
+      // Итоговая сумма за год теперь считается с учетом коэффициентов за квартальные и годовые оценки
+      let totalBase = baseM * 12;
+      let totalQ = 0;
+      for (let q = 0; q < 4; q++) {
+        let coefComp = parseFloat(gradeEls[q].value);
+        let coefFinal = coefComp;
+        if (addResultGrades.checked) {
+          const coefRes = parseFloat(gradeResEls[q].value);
+          coefFinal = (coefComp + coefRes) / 2;
+        }
+        totalQ += quarterPlan * coefFinal;
+      }
+      let totalY = yearPlan * kInt;
+      let totalWithCoeffs = totalBase + totalQ + totalY;
+
+      const oldTotal = parseFormattedNumber(totVal.textContent) || 0;
+      const newTotal = Math.round(totalWithCoeffs);
+
+      // Анимация счетчика
+      animateValue(totVal, oldTotal, newTotal, 500); // 500 мс длительность анимации
+
+      // Пояснение про НДФЛ по итоговой начисленной сумме (cumGross)
+      const stepInfo = steps.find(s => cumGross <= s.lim).info;
+      taxInfo.textContent = stepInfo;
+
+      // Считаем суммы по столбцам для строки "Итого"
+      let sumNorm = 0, sumPaid = 0, sumUnpaid = 0, sumBase = 0, sumQ = 0, sumY = 0, sumExtra = 0, sumGross = 0, sumTax = 0, sumNet = 0;
+      months.forEach((m, i) => {
+        const row = tbody.rows[i];
+        sumNorm += norms[i];
+        sumPaid += parseInt(paid[i].textContent) || 0;
+        sumUnpaid += parseInt(unpaid[i].value) || 0;
+        sumBase += parseInt((row.querySelector('.b').textContent || '0').replace(/\s/g, '')) || 0;
+        sumQ += parseInt((row.querySelector('.q').textContent || '0').replace(/\s/g, '')) || 0;
+        sumY += parseInt((row.querySelector('.y').textContent || '0').replace(/\s/g, '')) || 0;
+        sumExtra += parseInt((extra[i].value || '0').replace(/\s/g, '')) || 0;
+        sumGross += parseInt((row.querySelector('.totGross').textContent || '0').replace(/\s/g, '')) || 0;
+        sumTax += parseInt((row.querySelector('.t').textContent || '0').replace(/\s/g, '')) || 0;
+        sumNet += parseInt((row.querySelector('.totNet').textContent || '0').replace(/\s/g, '')) || 0;
+      });
+      document.getElementById('sumNorm').textContent = formatNumber(sumNorm);
+      document.getElementById('sumPaid').textContent = formatNumber(sumPaid);
+      document.getElementById('sumUnpaid').textContent = formatNumber(sumUnpaid);
+      document.getElementById('sumBase').textContent = formatNumber(sumBase);
+      document.getElementById('sumQ').textContent = formatNumber(sumQ);
+      document.getElementById('sumY').textContent = formatNumber(sumY);
+      document.getElementById('sumExtra').textContent = formatNumber(sumExtra);
+      document.getElementById('sumGross').textContent = formatNumber(sumGross);
+      document.getElementById('sumTax').textContent = formatNumber(sumTax);
+      document.getElementById('sumNet').textContent = formatNumber(sumNet);
+
+      // --- Обновление сообщения о периоде расчета ---
+      if (startDate && isNewEmployee.checked) {
+        const startYear = startDate.getFullYear();
+        // Рассчитываем конец периода (конец 2026 года)
+        const endPeriod = new Date(startYear, 11, 31, 23, 59, 59, 999);
+
+        let totalActiveWorkDays = 0;
+        for (let monthIndex = 0; monthIndex < 12; monthIndex++) {
+           let monthStart = new Date(startYear, monthIndex, 1);
+           let monthEnd = new Date(startYear, monthIndex + 1, 0);
+           // Если месяц полностью после даты старта ИЛИ месяц старта
+           if (monthEnd >= startDate) {
+               for (let d = new Date(monthStart); d <= monthEnd; d.setDate(d.getDate() + 1)) {
+                   if (d >= startDate && !isHoliday(d) && !isWeekend(d)) totalActiveWorkDays++;
+               }
+           }
+        }
+
+        const totalNormDaysYear = norms.reduce((a, b) => a + b, 0);
+        // Более точный расчет месяцев и дней на основе активных рабочих дней
+        const avgWorkDaysPerMonth = totalNormDaysYear / 12;
+        const estimatedMonths = Math.floor(totalActiveWorkDays / avgWorkDaysPerMonth);
+        const estimatedDays = Math.round((totalActiveWorkDays % avgWorkDaysPerMonth) / avgWorkDaysPerMonth * (totalNormDaysYear/12/30)); // Пропорционально дням в среднем месяце
+
+        // Финальный расчет по рабочим дням
+        let monthsInPeriod = 0;
+        let daysInFirstMonth = 0;
+        let totalDaysInPeriod = 0;
+        const startDay = startDate.getDate();
+        const startMonth = startDate.getMonth();
+
+        for (let month = startMonth; month < 12; month++) {
+          let monthStart = new Date(2026, month, 1);
+          let monthEnd = new Date(2026, month + 1, 0);
+          let daysInCurrentMonth = 0;
+          for (let d = new Date(monthStart); d <= monthEnd; d.setDate(d.getDate() + 1)) {
+            if (d >= startDate && !isHoliday(d) && !isWeekend(d)) {
+                daysInCurrentMonth++;
+                totalDaysInPeriod++;
+            }
+          }
+          if (month === startMonth) {
+             daysInFirstMonth = daysInCurrentMonth;
+          } else if (daysInCurrentMonth === norms[month]) {
+             monthsInPeriod++;
+          } else {
+             // Частичный месяц в конце периода (если бы был)
+          }
+        }
+         // Считаем оставшиеся дни после полных месяцев (исключая первый месяц)
+         let remainingWorkDays = totalDaysInPeriod - daysInFirstMonth - (monthsInPeriod * avgWorkDaysPerMonth);
+         // Пересчитываем в месяцы и дни более корректно
+         let totalWorkingDaysInPeriod = 0;
+          for (let month = 0; month < 12; month++) {
+             let monthStart = new Date(2026, month, 1);
+             let monthEnd = new Date(2026, month + 1, 0);
+             for (let d = new Date(monthStart); d <= monthEnd; d.setDate(d.getDate() + 1)) {
+               if (d >= startDate && !isHoliday(d) && !isWeekend(d)) {
+                 totalWorkingDaysInPeriod++;
+               }
+             }
+          }
+
+         const daysInAvgMonth = norms.reduce((a,b)=>a+b,0) / 12;
+         const finalMonths = Math.floor(totalWorkingDaysInPeriod / daysInAvgMonth);
+         const finalDays = Math.round((totalWorkingDaysInPeriod % daysInAvgMonth));
+
+        calculationPeriodMsg.textContent = `в расчёт вошло ${finalMonths} мес. ${finalDays} дн.`;
+        calculationPeriodMsg.style.display = 'block'; // Show the message
+
+      } else {
+        calculationPeriodMsg.style.display = 'none'; // Hide if not new employee or no date
+      }
+  }
+
+  /* ---------- Обработчики ---------- */
+    document.querySelectorAll('input,select').forEach(el => el.addEventListener('input', recalc));
+    addResultGrades.addEventListener('change', function () {
+      resultGradesBlock.style.display = this.checked ? '' : 'none';
+      recalc();
+    });
+
+  // Функция для проверки праздничных дней
+  function isHoliday(date) {
+    // Преобразуем дату в строку в формате YYYY-MM-DD с учетом локального времени
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const dateStr = `${year}-${month}-${day}`;
+    return holidays2026.includes(dateStr);
+  }
+
+  // Функция для проверки выходных дней
+  function isWeekend(date) {
+    const day = date.getDay();
+    // Проверка рабочих суббот в 2026 году (если есть)
+    // В 2026 году нет рабочих суббот согласно производственному календарю
+    return day === 0 || day === 6;
+  }
+
+    // Форматирование для всех полей .x (доп. выплаты)
+    extra.forEach(input => {
+      input.addEventListener('input', function (e) {
+        const value = parseFormattedNumber(e.target.value);
+        e.target.value = formatNumber(value);
+        recalc();
+      });
+    });
+
+  // Ограничение ввода для неоплачиваемого отпуска
+  unpaid.forEach((input, i) => {
+    input.addEventListener('input', function () {
+      let val = parseInt(input.value) || 0;
+      if (val < 0) val = 0;
+      // Получаем количество оплачиваемых дней в этом месяце
+      let paidDays = parseInt(paid[i].textContent) || 0;
+      // Максимально допустимое значение неоплачиваемого отпуска
+      let maxUnpaid = norms[i] - paidDays;
+      if (val > maxUnpaid) val = maxUnpaid;
+      input.value = val;
+      recalc();
+    });
+  });
+
+  // --- Flatpickr для даты начала работы ---
+  const isNewEmployee = document.getElementById('isNewEmployee');
+  const startDateInput = document.getElementById('startDate');
+  const calculationPeriodMsg = document.getElementById('calculationPeriodMsg');
+  const labelNewEmployee = document.getElementById('labelNewEmployee');
+  const startDateWrap = document.getElementById('startDateWrap'); // Получаем ссылку на контейнер даты
+
+  let startDate = null;
+
+  // Инициализация видимости контейнера даты и текста метки при загрузке страницы
+  if (isNewEmployee.checked) {
+      startDateWrap.style.display = 'flex';
+      labelNewEmployee.textContent = 'Принят на работу в 2026 году с';
+  } else {
+      startDateWrap.style.display = 'none';
+      labelNewEmployee.textContent = 'Принят на работу в 2026 году';
+  }
+
+  flatpickr(startDateInput, {
+    dateFormat: 'd.m.Y',
+    locale: 'ru',
+    allowInput: true,
+    onDayCreate: function (dObj, dStr, fp, dayElem) {
+        const date = dayElem.dateObj;
+        if (isHoliday(date)) {
+            dayElem.classList.add('holiday');
+        }
+        if (isWeekend(date) && !isHoliday(date)) {
+            dayElem.classList.add('weekend');
+        }
+    },
+    onChange: function(selectedDates) {
+      startDate = selectedDates[0] || null;
+      // Показываем/скрываем сообщение о периоде расчета в зависимости от наличия даты и режима
+      if (isNewEmployee.checked && startDate) {
+          calculationPeriodMsg.style.display = 'block';
+      } else {
+          calculationPeriodMsg.style.display = 'none';
+      }
+      recalc();
+    }
+  });
+
+  isNewEmployee.addEventListener('change', function() {
+    // Управляем видимостью контейнера даты и текстом метки
+    if (this.checked) {
+        startDateWrap.style.display = 'flex';
+        labelNewEmployee.textContent = 'Принят на работу в 2026 году с';
+        labelNewEmployee.classList.add('active');
+        labelFullYear.classList.remove('active');
+    } else {
+        startDateWrap.style.display = 'none';
+        labelNewEmployee.textContent = 'Принят на работу в 2026 году';
+        labelNewEmployee.classList.remove('active');
+        labelFullYear.classList.add('active');
+    }
+    // При деактивации сбрасываем дату и скрываем сообщение о периоде
+    if (!this.checked) {
+      startDate = null;
+      startDateInput.value = '';
+      calculationPeriodMsg.style.display = 'none';
+    }
+    recalc();
+  });
+
+  // Функция для анимации числового значения
+  function animateValue(obj, start, end, duration) {
+      let startTimestamp = null;
+      const step = (timestamp) => {
+          if (!startTimestamp) startTimestamp = timestamp;
+          const elapsed = timestamp - startTimestamp;
+          const progress = Math.min(elapsed / duration, 1);
+          const currentValue = Math.floor(progress * (end - start) + start);
+          obj.textContent = formatNumber(currentValue) + ' ₽';
+          if (progress < 1) {
+              window.requestAnimationFrame(step);
+          } else {
+               obj.textContent = formatNumber(end) + ' ₽'; // Убедимся, что конечное значение точно установлено
+          }
+      };
+      window.requestAnimationFrame(step);
+  }
+
+  // Инициализация
+  recalc();
+</script>
+</body>
+
+</html>
