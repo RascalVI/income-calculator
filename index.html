@@ -1382,79 +1382,9 @@
       document.getElementById('sumTax').textContent = formatNumber(sumTax);
       document.getElementById('sumNet').textContent = formatNumber(sumNet);
 
-      // --- Обновление сообщения о периоде расчета ---
-      if (startDate && isNewEmployee.checked) {
-        const startYear = startDate.getFullYear();
-        // Рассчитываем конец периода (конец 2026 года)
-        const endPeriod = new Date(startYear, 11, 31, 23, 59, 59, 999);
-
-        let totalActiveWorkDays = 0;
-        for (let monthIndex = 0; monthIndex < 12; monthIndex++) {
-           let monthStart = new Date(startYear, monthIndex, 1);
-           let monthEnd = new Date(startYear, monthIndex + 1, 0);
-           // Если месяц полностью после даты старта ИЛИ месяц старта
-           if (monthEnd >= startDate) {
-               for (let d = new Date(monthStart); d <= monthEnd; d.setDate(d.getDate() + 1)) {
-                   if (d >= startDate && !isHoliday(d) && !isWeekend(d)) totalActiveWorkDays++;
-               }
-           }
-        }
-
-        const totalNormDaysYear = norms.reduce((a, b) => a + b, 0);
-        // Более точный расчет месяцев и дней на основе активных рабочих дней
-        const avgWorkDaysPerMonth = totalNormDaysYear / 12;
-        const estimatedMonths = Math.floor(totalActiveWorkDays / avgWorkDaysPerMonth);
-        const estimatedDays = Math.round((totalActiveWorkDays % avgWorkDaysPerMonth) / avgWorkDaysPerMonth * (totalNormDaysYear/12/30)); // Пропорционально дням в среднем месяце
-
-        // Финальный расчет по рабочим дням
-        let monthsInPeriod = 0;
-        let daysInFirstMonth = 0;
-        let totalDaysInPeriod = 0;
-        const startDay = startDate.getDate();
-        const startMonth = startDate.getMonth();
-
-        for (let month = startMonth; month < 12; month++) {
-          let monthStart = new Date(2026, month, 1);
-          let monthEnd = new Date(2026, month + 1, 0);
-          let daysInCurrentMonth = 0;
-          for (let d = new Date(monthStart); d <= monthEnd; d.setDate(d.getDate() + 1)) {
-            if (d >= startDate && !isHoliday(d) && !isWeekend(d)) {
-                daysInCurrentMonth++;
-                totalDaysInPeriod++;
-            }
-          }
-          if (month === startMonth) {
-             daysInFirstMonth = daysInCurrentMonth;
-          } else if (daysInCurrentMonth === norms[month]) {
-             monthsInPeriod++;
-          } else {
-             // Частичный месяц в конце периода (если бы был)
-          }
-        }
-         // Считаем оставшиеся дни после полных месяцев (исключая первый месяц)
-         let remainingWorkDays = totalDaysInPeriod - daysInFirstMonth - (monthsInPeriod * avgWorkDaysPerMonth);
-         // Пересчитываем в месяцы и дни более корректно
-         let totalWorkingDaysInPeriod = 0;
-          for (let month = 0; month < 12; month++) {
-             let monthStart = new Date(2026, month, 1);
-             let monthEnd = new Date(2026, month + 1, 0);
-             for (let d = new Date(monthStart); d <= monthEnd; d.setDate(d.getDate() + 1)) {
-               if (d >= startDate && !isHoliday(d) && !isWeekend(d)) {
-                 totalWorkingDaysInPeriod++;
-               }
-             }
-          }
-
-         const daysInAvgMonth = norms.reduce((a,b)=>a+b,0) / 12;
-         const finalMonths = Math.floor(totalWorkingDaysInPeriod / daysInAvgMonth);
-         const finalDays = Math.round((totalWorkingDaysInPeriod % daysInAvgMonth));
-
-        calculationPeriodMsg.textContent = `в расчёт вошло ${finalMonths} мес. ${finalDays} дн.`;
-        calculationPeriodMsg.style.display = 'block'; // Show the message
-
-      } else {
-        calculationPeriodMsg.style.display = 'none'; // Hide if not new employee or no date
-      }
+      // --- Сообщение о периоде расчёта убрано по требованиями UX ---
+      // Текст больше не отображаем, чтобы не смущать пользователей
+      calculationPeriodMsg.style.display = 'none';
   }
 
   /* ---------- Обработчики ---------- */
@@ -1539,12 +1469,6 @@
     },
     onChange: function(selectedDates) {
       startDate = selectedDates[0] || null;
-      // Показываем/скрываем сообщение о периоде расчета в зависимости от наличия даты и режима
-      if (isNewEmployee.checked && startDate) {
-          calculationPeriodMsg.style.display = 'block';
-      } else {
-          calculationPeriodMsg.style.display = 'none';
-      }
       recalc();
     }
   });
@@ -1562,11 +1486,10 @@
         labelNewEmployee.classList.remove('active');
         labelFullYear.classList.add('active');
     }
-    // При деактивации сбрасываем дату и скрываем сообщение о периоде
+    // При деактивации сбрасываем дату
     if (!this.checked) {
       startDate = null;
       startDateInput.value = '';
-      calculationPeriodMsg.style.display = 'none';
     }
     recalc();
   });
